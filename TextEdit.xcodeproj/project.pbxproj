@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0791640010423EBF009F6E18 /* chardetect.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079163FF10423EBF009F6E18 /* chardetect.a */; };
+		07ABE04E1041D06E00920FB5 /* chardetect.h in Headers */ = {isa = PBXBuildFile; fileRef = 07ABE04D1041D06E00920FB5 /* chardetect.h */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
 		176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 176A30470E23EB0600857A3B /* FontNameTransformer.m */; };
 		176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */; };
@@ -65,6 +67,8 @@
 		0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		0230D2BFFF2F85EF11CA0C5D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		079163FF10423EBF009F6E18 /* chardetect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = chardetect.a; sourceTree = "<group>"; };
+		07ABE04D1041D06E00920FB5 /* chardetect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chardetect.h; sourceTree = "<group>"; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
 		176A30470E23EB0600857A3B /* FontNameTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FontNameTransformer.m; sourceTree = "<group>"; };
 		176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditDefaultsKeys.h; sourceTree = "<group>"; };
@@ -126,6 +130,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */,
+				0791640010423EBF009F6E18 /* chardetect.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,6 +157,7 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
+				07ABE04D1041D06E00920FB5 /* chardetect.h */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
 				6FE20903FE93D5F211CA2CEA /* Document.h */,
 				6FE208FBFE93D5F211CA2CEA /* Document.m */,
@@ -246,6 +252,7 @@
 		6FE20939FE93D5F211CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				079163FF10423EBF009F6E18 /* chardetect.a */,
 				0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */,
 				0230D2BEFF2F85A411CA0C5D /* References (Non-linked frameworks) */,
 			);
@@ -274,6 +281,7 @@
 				411131DA0D4FA70D00AF3A0E /* TextEditMisc.h in Headers */,
 				176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */,
 				176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */,
+				07ABE04E1041D06E00920FB5 /* chardetect.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -521,10 +529,14 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)\"";
 				MACOSX_DEPLOYMENT_TARGET = "";
 				OTHER_CFLAGS = "$(cflags)";
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-lstdc++";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = TextEdit;
 				SECTORDER_FLAGS = (
@@ -561,10 +573,14 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)\"";
 				MACOSX_DEPLOYMENT_TARGET = "";
 				OTHER_CFLAGS = "$(cflags)";
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-lstdc++";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = TextEdit;
 				SECTORDER_FLAGS = (
@@ -589,14 +605,22 @@
 		41534B9308A2B299002069FE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
+				GCC_VERSION = "";
 				MACOSX_DEPLOYMENT_TARGET = "";
+				OTHER_LDFLAGS = "";
 			};
 			name = Debug;
 		};
 		41534B9408A2B299002069FE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
+				GCC_VERSION = "";
 				MACOSX_DEPLOYMENT_TARGET = "";
+				OTHER_LDFLAGS = "";
 			};
 			name = Release;
 		};

@@ -45,5 +45,8 @@ enum {
 */
 - (void)noteEncodingListChange:(BOOL)writeDefault updateList:(BOOL)updateList postNotification:(BOOL)post;
 
+/* Use universal charset detector to automatically determine which encoding
+ * we should use to open the URL */
+- (NSStringEncoding)detectedEncodingForURL:(NSURL *)url;
 
 @end

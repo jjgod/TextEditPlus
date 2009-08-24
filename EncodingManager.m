@@ -41,7 +41,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "EncodingManager.h"
-
+#import "chardetect.h"
 
 /*
     EncodingPopUpButtonCell is a subclass of NSPopUpButtonCell which provides the ability to automatically recompute its contents on changes to the encodings list. This allows sprinkling these around the app any have them automatically update themselves. Because we really only want to know when the cell's selectedItem is changed, we want to prevent the last item ("Customize...") from being selected.
@@ -315,6 +315,49 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr) {
     [self noteEncodingListChange:NO updateList:YES postNotification:YES];
 }
 
+#define BUFSIZE	4096
+
+/* Use universal charset detector to automatically determine which encoding
+ * we should use to open the URL */
+- (NSStringEncoding)detectedEncodingForURL:(NSURL *)url
+{
+    chardet_t chardetContext;
+    FILE     *fp;
+    char      buf[BUFSIZE], charset[CHARDET_MAX_ENCODING_NAME];
+    int       ret, len;
+
+    CFStringEncoding cfenc;
+    CFStringRef      charsetStr;
+
+    chardet_create(&chardetContext);
+
+    chardet_reset(chardetContext);
+    fp = fopen([[url path] fileSystemRepresentation], "r");
+    if (! fp)
+		return NoStringEncoding;
+
+    do
+    {
+        len = fread(buf, 1, sizeof(buf), fp);
+        ret = chardet_handle_data(chardetContext, buf, len);
+    } while ((ret == CHARDET_RESULT_OK) && (feof(fp) == 0));
+
+    fclose(fp);
+    chardet_data_end(chardetContext);
+
+    ret = chardet_get_charset(chardetContext, charset, CHARDET_MAX_ENCODING_NAME);
+    if (ret != CHARDET_RESULT_OK)
+        return NSUTF8StringEncoding;
+
+    // NSLog(@"charset: %s\n", charset);
+    charsetStr = CFStringCreateWithCString(NULL, charset, kCFStringEncodingUTF8);
+    cfenc = CFStringConvertIANACharSetNameToEncoding(charsetStr);
+    CFRelease(charsetStr);
+
+    chardet_destroy(chardetContext);
+
+    return CFStringConvertEncodingToNSStringEncoding(cfenc);
+}
 
 @end
 
