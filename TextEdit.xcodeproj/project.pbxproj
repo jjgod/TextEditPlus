@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		0791640010423EBF009F6E18 /* chardetect.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079163FF10423EBF009F6E18 /* chardetect.a */; };
 		07ABE04E1041D06E00920FB5 /* chardetect.h in Headers */ = {isa = PBXBuildFile; fileRef = 07ABE04D1041D06E00920FB5 /* chardetect.h */; };
+		07E0CB41104C0B3700E57722 /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07E0CB3F104C0B3700E57722 /* JJTypesetter.h */; };
+		07E0CB42104C0B3700E57722 /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E0CB40104C0B3700E57722 /* JJTypesetter.m */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
 		176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 176A30470E23EB0600857A3B /* FontNameTransformer.m */; };
 		176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */; };
@@ -69,6 +71,8 @@
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		079163FF10423EBF009F6E18 /* chardetect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = chardetect.a; sourceTree = "<group>"; };
 		07ABE04D1041D06E00920FB5 /* chardetect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chardetect.h; sourceTree = "<group>"; };
+		07E0CB3F104C0B3700E57722 /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
+		07E0CB40104C0B3700E57722 /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
 		176A30470E23EB0600857A3B /* FontNameTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FontNameTransformer.m; sourceTree = "<group>"; };
 		176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditDefaultsKeys.h; sourceTree = "<group>"; };
@@ -157,6 +161,8 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
+				07E0CB3F104C0B3700E57722 /* JJTypesetter.h */,
+				07E0CB40104C0B3700E57722 /* JJTypesetter.m */,
 				07ABE04D1041D06E00920FB5 /* chardetect.h */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
 				6FE20903FE93D5F211CA2CEA /* Document.h */,
@@ -282,6 +288,7 @@
 				176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */,
 				176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */,
 				07ABE04E1041D06E00920FB5 /* chardetect.h in Headers */,
+				07E0CB41104C0B3700E57722 /* JJTypesetter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,6 +405,7 @@
 				41FA793B0B95E61A00FA84AA /* PrintPanelAccessoryController.m in Sources */,
 				413912170BD54AB800760A3D /* DocumentPropertiesPanelController.m in Sources */,
 				176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */,
+				07E0CB42104C0B3700E57722 /* JJTypesetter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

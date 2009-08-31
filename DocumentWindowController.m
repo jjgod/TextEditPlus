@@ -44,6 +44,7 @@
 #import "TextEditDefaultsKeys.h"
 #import "TextEditMisc.h"
 #import "TextEditErrors.h"
+#import "JJTypesetter.h"
 
 @interface DocumentWindowController(Private)
 
@@ -126,7 +127,11 @@
 	}
 	
 	if (doc) {
+	    JJTypesetter *typesetter = [[JJTypesetter alloc] init];
+	    [typesetter setEnabled: [doc isRichText] ? NO : YES];
+	    [layoutMgr setTypesetter:typesetter];
             [[doc textStorage] addLayoutManager:layoutMgr];
+	    [typesetter release];
 	    
 	    if ([self isWindowLoaded]) {
                 [self setHasMultiplePages:[doc hasMultiplePages] force:NO];
@@ -584,6 +589,9 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     [doc setRichText:newRich];
     [doc setFileURL:newURL];
     [self convertTextForRichTextStateRemoveAttachments:rich];
+
+    JJTypesetter *ts = (JJTypesetter *)[[[self firstTextView] layoutManager] typesetter];
+    [ts setEnabled: newRich ? NO : YES];
     
     if (![undoMgr isUndoing]) {
 	[undoMgr setActionName:newRich ? NSLocalizedString(@"Make Rich Text", @"Undo menu item text (without 'Undo ') for making a document rich text") : NSLocalizedString(@"Make Plain Text", @"Undo menu item text (without 'Undo ') for making a document plain text")];
