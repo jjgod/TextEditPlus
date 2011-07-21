@@ -1,6 +1,6 @@
 /*
         Controller.m
-        Copyright (c) 1995-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
         Author: Ali Ozer
 
 	TextEdit milestones:
@@ -12,9 +12,10 @@
 	Java version created 8/11/97
 	Undo 9/17/97
 	Scripting 6/18/98
-        Aquafication 11/1/99
-        Encoding customization 5/20/02
-        NSDocument conversion 6/1/05
+	Aquafication 11/1/99
+	Encoding customization 5/20/02
+	NSDocument conversion 6/1/05
+	Autosaving 1/10
 
         Central controller object for TextEdit, for implementing app functionality (services) as well 
 	as few tidbits for which there are no dedicated controllers.
@@ -65,14 +66,14 @@ static NSDictionary *defaultValues() {
     static NSDictionary *dict = nil;
     if (!dict) {
         dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                [NSNumber numberWithInteger:30], AutosaveDelay,
+                [NSNumber numberWithInteger:30], AutosavingDelay,
                 [NSNumber numberWithBool:NO], NumberPagesWhenPrinting,
-                [NSNumber numberWithBool:YES], DeleteBackup, 
+                [NSNumber numberWithBool:YES], WrapToFitWhenPrinting,
                 [NSNumber numberWithBool:YES], RichText, 
                 [NSNumber numberWithBool:NO], ShowPageBreaks,
 		[NSNumber numberWithBool:NO], OpenPanelFollowsMainWindow,
 		[NSNumber numberWithBool:YES], AddExtensionToNewPlainTextFiles,
-                [NSNumber numberWithInteger:75], WindowWidth, 
+                [NSNumber numberWithInteger:90], WindowWidth, 
                 [NSNumber numberWithInteger:30], WindowHeight, 
                 [NSNumber numberWithUnsignedInteger:NoStringEncoding], PlainTextEncodingForRead,
                 [NSNumber numberWithUnsignedInteger:NoStringEncoding], PlainTextEncodingForWrite,
@@ -82,14 +83,14 @@ static NSDictionary *defaultValues() {
 		[NSNumber numberWithBool:NO], IgnoreHTML,
                 [NSNumber numberWithBool:YES], CheckSpellingAsYouType,
                 [NSNumber numberWithBool:NO], CheckGrammarWithSpelling,
-                [NSNumber numberWithBool:YES], CorrectSpellingAutomatically,
+                [NSNumber numberWithBool:[NSSpellChecker isAutomaticSpellingCorrectionEnabled]], CorrectSpellingAutomatically,
                 [NSNumber numberWithBool:YES], ShowRuler,
                 [NSNumber numberWithBool:YES], SmartCopyPaste,
                 [NSNumber numberWithBool:NO], SmartQuotes,
                 [NSNumber numberWithBool:NO], SmartDashes,
                 [NSNumber numberWithBool:NO], SmartLinks,
                 [NSNumber numberWithBool:NO], DataDetectors,
-                [NSNumber numberWithBool:YES], TextReplacement,
+                [NSNumber numberWithBool:[NSSpellChecker isAutomaticTextReplacementEnabled]], TextReplacement,
                 [NSNumber numberWithBool:NO], SubstitutionsEnabledInRichTextOnly,
                 @"", AuthorProperty,
                 @"", CompanyProperty,
@@ -106,6 +107,8 @@ static NSDictionary *defaultValues() {
 }
 
 @implementation Controller
+
+@synthesize preferencesController, propertiesController, lineController;
 
 + (void)initialize {
     // Set up default values for preferences managed by NSUserDefaultsController

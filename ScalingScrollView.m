@@ -1,6 +1,6 @@
 /*
         ScalingScrollView.m
-        Copyright (c) 1995-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
         Author: Mike Ferris
 */
 /*
@@ -114,22 +114,31 @@ static const CGFloat _NSScaleMenuFontSize = 10.0;
         _scalePopUpButton = nil;
     } else {
 	NSScroller *horizScroller;
-	NSRect horizScrollerFrame, buttonFrame;
-	
-        if (!_scalePopUpButton) [self makeScalePopUpButton];
+	NSRect horizScrollerFrame, buttonFrame = NSZeroRect;
+        id documentView = [self documentView];
+	BOOL showsPopup = (([documentView respondsToSelector:@selector(showsScalePopUpButton)] && [documentView showsScalePopUpButton]) ? YES : NO);
+
+        if (showsPopup) {
+            if (!_scalePopUpButton) [self makeScalePopUpButton];
+            buttonFrame = [_scalePopUpButton frame];
+        } else {
+            [_scalePopUpButton removeFromSuperview];
+            _scalePopUpButton = nil;
+        }
 
         horizScroller = [self horizontalScroller];
         horizScrollerFrame = [horizScroller frame];
-        buttonFrame = [_scalePopUpButton frame];
 
         // Now we'll just adjust the horizontal scroller size and set the button size and location.
         horizScrollerFrame.size.width = horizScrollerFrame.size.width - buttonFrame.size.width;
         [horizScroller setFrameSize:horizScrollerFrame.size];
 
-        buttonFrame.origin.x = NSMaxX(horizScrollerFrame);
-        buttonFrame.size.height = horizScrollerFrame.size.height + 1.0;
-        buttonFrame.origin.y = [self bounds].size.height - buttonFrame.size.height + 1.0;
-        [_scalePopUpButton setFrame:buttonFrame];
+        if (showsPopup) {
+            buttonFrame.origin.x = NSMaxX(horizScrollerFrame);
+            buttonFrame.size.height = horizScrollerFrame.size.height + 1.0;
+            buttonFrame.origin.y = [self bounds].size.height - buttonFrame.size.height + 1.0;
+            [_scalePopUpButton setFrame:buttonFrame];
+        }            
     }
 }
 

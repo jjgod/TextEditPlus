@@ -1,6 +1,6 @@
 /*
         Document.m
-        Copyright (c) 1995-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
         Author: Ali Ozer
 
         Document object for TextEdit. 
@@ -45,9 +45,11 @@
 #import "DocumentController.h"
 #import "DocumentWindowController.h"
 #import "PrintPanelAccessoryController.h"
+#import "PrintingTextView.h"
 #import "TextEditDefaultsKeys.h"
 #import "TextEditErrors.h"
 #import "TextEditMisc.h"
+
 
 #define oldEditPaddingCompensation 12.0
 
@@ -88,7 +90,9 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 */
 - (NSDictionary *)textDocumentTypeToTextEditDocumentTypeMappingTable {
     static NSDictionary *documentMappings = nil;
-    if (documentMappings == nil) {
+    // Use of dispatch_once() makes the initialization thread-safe, and it needs to be, since multiple documents can be opened concurrently
+    static dispatch_once_t once = 0; 
+    dispatch_once(&once, ^{
 	documentMappings = [[NSDictionary alloc] initWithObjectsAndKeys:
             (NSString *)kUTTypePlainText, NSPlainTextDocumentType,
             (NSString *)kUTTypeRTF, NSRTFTextDocumentType,
@@ -101,7 +105,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	    OpenDocumentTextType, NSOpenDocumentTextDocumentType,
             (NSString *)kUTTypeWebArchive, NSWebArchiveTextDocumentType,
 	    nil];
-    }
+        });
     return documentMappings;
 }
 
@@ -117,14 +121,17 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     NSDictionary *docAttrs;
     id val, paperSizeVal, viewSizeVal;
     NSTextStorage *text = [self textStorage];
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+
+    [fileTypeToSet release];
+    fileTypeToSet = nil;
     
     [[self undoManager] disableUndoRegistration];
     
     [options setObject:absoluteURL forKey:NSBaseURLDocumentOption];
-	if (encoding == NoStringEncoding &&
-		([workspace type:typeName conformsToType:(NSString *)kUTTypePlainText]))
-		encoding = [[EncodingManager sharedInstance] detectedEncodingForURL:absoluteURL];
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+    if (encoding == NoStringEncoding &&
+        ([workspace type:typeName conformsToType:(NSString *)kUTTypePlainText]))
+        encoding = [[EncodingManager sharedInstance] detectedEncodingForURL:absoluteURL];
 
     if (encoding != NoStringEncoding) {
         [options setObject:[NSNumber numberWithUnsignedInteger:encoding] forKey:NSCharacterEncodingDocumentOption];
@@ -246,7 +253,12 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     
     [self setReadOnly:((val = [docAttrs objectForKey:NSReadOnlyDocumentAttribute]) && ([val integerValue] > 0))];
     
+    [self setOriginalOrientationSections:[docAttrs objectForKey:NSTextLayoutSectionsAttribute]];
+    
     [[self undoManager] enableUndoRegistration];
+    
+    // If we're reverting, NSDocument will set the file type behind out backs. This enables restoring that type.
+    fileTypeToSet = [[self fileType] copy];
     
     return YES;
 }
@@ -261,9 +273,10 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
             NSString *measurementUnits = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleMeasurementUnits"];
             CGFloat tabInterval = ([@"Centimeters" isEqual:measurementUnits]) ? (72.0 / 2.54) : (72.0 / 2.0);  // Every cm or half inch
 	    NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+            NSTextTabType type = ((NSWritingDirectionRightToLeft == [NSParagraphStyle defaultWritingDirectionForLanguage:nil]) ? NSRightTabStopType : NSLeftTabStopType);
 	    [paraStyle setTabStops:[NSArray array]];	// This first clears all tab stops
 	    for (cnt = 0; cnt < 12; cnt++) {	// Add 12 tab stops, at desired intervals...
-                NSTextTab *tabStop = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabInterval * (cnt + 1)];
+                NSTextTab *tabStop = [[NSTextTab alloc] initWithType:type location:tabInterval * (cnt + 1)];
 		[paraStyle addTabStop:tabStop];
 	 	[tabStop release];
 	    }
@@ -306,7 +319,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 }
 
 
-/* This method will return a suggested encoding for the document. In Leopard, unless the user has specified a favorite encoding for saving that applies to the document, we use UTF-8.
+/* This method will return a suggested encoding for the document. Since Mac OS X Leopard, unless the user has specified a favorite encoding for saving that applies to the document, we use UTF-8.
 */
 - (NSStringEncoding)suggestedDocumentEncoding {
     NSUInteger enc = NoStringEncoding;
@@ -392,6 +405,9 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[dict setObject:[NSNumber numberWithInteger:2] forKey:NSPrefixSpacesDocumentAttribute];
     }
     
+    // Set the text layout orientation for each page
+    if (val = [[[self windowControllers] objectAtIndex:0] layoutOrientationSections]) [dict setObject:val forKey:NSTextLayoutSectionsAttribute];
+
     // Set the document properties, generically, going through key value coding
     for (NSString *property in [self knownDocumentProperties]) {
 	id value = [self valueForKey:property];
@@ -425,7 +441,10 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [keywords release];
     [copyright release];
     
+    [fileTypeToSet release];
     [defaultDestination release];
+
+    [originalOrientationSections release];
 
     if (uniqueZone) NSRecycleZone([self zone]);
 
@@ -482,6 +501,16 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[self setPrintInfo:newPrintInfo];
 	[newPrintInfo release];
     }
+}
+
+/* Layout orientation sections */
+- (void)setOriginalOrientationSections:(NSArray *)array {
+    [originalOrientationSections release];
+    originalOrientationSections = [array copy];
+}
+
+- (NSArray *)originalOrientationSections {
+    return originalOrientationSections; 
 }
 
 /* Hyphenation related methods.
@@ -651,30 +680,45 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 
 
 - (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)printSettings error:(NSError **)outError {
-    NSPrintInfo *tempPrintInfo = [self printInfo];
-    BOOL numberPages = [[NSUserDefaults standardUserDefaults] boolForKey:NumberPagesWhenPrinting];
-    if ([printSettings count] || numberPages) {
-	tempPrintInfo = [[tempPrintInfo copy] autorelease];
-	[[tempPrintInfo dictionary] addEntriesFromDictionary:printSettings];
-	if (numberPages) {
-	    [[tempPrintInfo dictionary] setValue:[NSNumber numberWithBool:YES] forKey:NSPrintHeaderAndFooter];
-	}
-    }
-    if ([[self windowControllers] count] == 0) {
-	[self makeWindowControllers];
+    NSPrintInfo *tempPrintInfo = [[[self printInfo] copy] autorelease];
+    [[tempPrintInfo dictionary] addEntriesFromDictionary:printSettings];
+    
+    BOOL multiPage = [self hasMultiplePages];
+    
+    if ([[self windowControllers] count] == 0) [self makeWindowControllers];
+
+    id printingView;
+    if (multiPage) {    // If already in multiple-page ("wrap-to-page") mode, we simply use the display view for printing
+        printingView = [[[self windowControllers] objectAtIndex:0] documentView];
+        [[[[self windowControllers] objectAtIndex:0] firstTextView] textEditDoForegroundLayoutToCharacterIndex:NSIntegerMax];		// Make sure the whole document is laid out before printing
+    } else {            // Otherwise we create a new text view (along with a text container and layout manager)
+        printingView = [[[PrintingTextView alloc] init] autorelease];   // PrintingTextView is a simple subclass of NSTextView. Creating the view this way creates rest of the text system, which it will release when dealloc'ed (since the print panel will be releasing this, we want to hand off the responsibility of release everything)
+        NSLayoutManager *layoutManager = [[[[printingView textContainer] layoutManager] retain] autorelease];
+        NSTextStorage *unnecessaryTextStorage = [layoutManager textStorage];  // We don't want the text storage, since we will use the one we have
+        [unnecessaryTextStorage removeLayoutManager:layoutManager];
+        [unnecessaryTextStorage release];
+        [textStorage addLayoutManager:layoutManager];
+        [textStorage retain];   // Since later release of the printingView will release the textStorage as well
+        [printingView setLayoutOrientation:[[[[self windowControllers] objectAtIndex:0] firstTextView] layoutOrientation]];
     }
     
-    NSPrintOperation *op = [NSPrintOperation printOperationWithView:[[[self windowControllers] objectAtIndex:0] documentView] printInfo:tempPrintInfo];
+    PrintPanelAccessoryController *accessoryController = [[[PrintPanelAccessoryController alloc] init] autorelease];
+    NSPrintOperation *op = [NSPrintOperation printOperationWithView:printingView printInfo:tempPrintInfo];
     [op setShowsPrintPanel:YES];
     [op setShowsProgressPanel:YES];
     
-    [[[self windowControllers] objectAtIndex:0] doForegroundLayoutToCharacterIndex:NSIntegerMax];	// Make sure the whole document is laid out before printing
-    
+    // If we're in wrap-to-page mode, no need to let the user tweak wrap-to-page mode printing
+    [accessoryController setShowsWrappingToFit:!multiPage]; 
+
     NSPrintPanel *printPanel = [op printPanel];
-    [printPanel addAccessoryController:[[[PrintPanelAccessoryController alloc] init] autorelease]];
-    // We allow changing print parameters if not in "Wrap to Page" mode, where the page setup settings are used
-    if (![self hasMultiplePages]) [printPanel setOptions:[printPanel options] | NSPrintPanelShowsPaperSize | NSPrintPanelShowsOrientation];
-        
+    if (!multiPage) {
+        [printingView setOriginalSize:[[[[self windowControllers] objectAtIndex:0] firstTextView] frame].size];
+        [printingView setPrintPanelAccessoryController:accessoryController];
+        // We allow changing print parameters if not in "Wrap to Page" mode, where the page setup settings are used
+        [printPanel setOptions:[printPanel options] | NSPrintPanelShowsPaperSize | NSPrintPanelShowsOrientation];
+    }
+    [printPanel addAccessoryController:accessoryController];
+    
     return op;
 }
 
@@ -771,14 +815,17 @@ void validateToggleItem(NSMenuItem *aCell, BOOL useFirst, NSString *first, NSStr
     
     if (action == @selector(toggleReadOnly:)) {
 	validateToggleItem(aCell, [self isReadOnly], NSLocalizedString(@"Allow Editing", @"Menu item to make the current document editable (not read-only)"), NSLocalizedString(@"Prevent Editing", @"Menu item to make the current document read-only"));
+	return YES;
     } else if (action == @selector(togglePageBreaks:)) {
         validateToggleItem(aCell, [self hasMultiplePages], NSLocalizedString(@"&Wrap to Window", @"Menu item to cause text to be laid out to size of the window"), NSLocalizedString(@"&Wrap to Page", @"Menu item to cause text to be laid out to the size of the currently selected page type"));
+	return YES;
     } else if (action == @selector(toggleHyphenation:)) {
         validateToggleItem(aCell, ([self hyphenationFactor] > 0.0), NSLocalizedString(@"Do not Allow Hyphenation", @"Menu item to disallow hyphenation in the document"), NSLocalizedString(@"Allow Hyphenation", @"Menu item to allow hyphenation in the document"));
         if ([self isReadOnly]) return NO;
+	return YES;
     }
     
-    return YES;
+    return [super validateMenuItem:aCell];
 }
 
 // For scripting. We already have a -textStorage method implemented above.
@@ -809,6 +856,11 @@ void validateToggleItem(NSMenuItem *aCell, BOOL useFirst, NSString *first, NSStr
     // See the comment in the above override of -revertDocumentToSaved:.
     BOOL success = [super revertToContentsOfURL:url ofType:type error:outError];
     if (success) {
+        if (fileTypeToSet) {	// If we're reverting, NSDocument will set the file type behind out backs. This enables restoring that type.
+            [self setFileType:fileTypeToSet];
+            [fileTypeToSet release];
+            fileTypeToSet = nil;
+        }
         [defaultDestination release];
         defaultDestination = nil;
         [self setHasMultiplePages:hasMultiplePages];
@@ -845,26 +897,13 @@ CGFloat defaultTextPadding(void) {
 
 @implementation Document (TextEditNSDocumentOverrides)
 
++ (BOOL)autosavesInPlace {
+    return YES;
+}
+
 + (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     return !([workspace type:typeName conformsToType:(NSString *)kUTTypeHTML] || [workspace type:typeName conformsToType:(NSString *)kUTTypeWebArchive]);
-}
-
-- (id)initForURL:(NSURL *)absoluteDocumentURL withContentsOfURL:(NSURL *)absoluteDocumentContentsURL ofType:(NSString *)typeName error:(NSError **)outError {
-    // This is the method that NSDocumentController invokes during reopening of an autosaved document after a crash. The passed-in type name might be NSRTFDPboardType, but absoluteDocumentURL might point to an RTF document, and if we did nothing this document's fileURL and fileType might not agree, which would cause trouble the next time the user saved this document. absoluteDocumentURL might also be nil, if the document being reopened has never been saved before. It's an oddity of NSDocument that if you override -autosavingFileType you probably have to override this method too.
-    if (absoluteDocumentURL) {
-	NSString *realTypeName = [[NSDocumentController sharedDocumentController] typeForContentsOfURL:absoluteDocumentURL error:outError];
-	if (realTypeName) {
-	    self = [super initForURL:absoluteDocumentURL withContentsOfURL:absoluteDocumentContentsURL ofType:typeName error:outError];
-	    [self setFileType:realTypeName];
-	} else {
-	    [self release];
-	    self = nil;
-	}
-    } else {
-	self = [super initForURL:absoluteDocumentURL withContentsOfURL:absoluteDocumentContentsURL ofType:typeName error:outError];
-    }
-    return self;
 }
 
 - (void)makeWindowControllers {
@@ -892,12 +931,6 @@ CGFloat defaultTextPadding(void) {
     return outArray;
 }
 
-/* Whether to keep the backup file
-*/
-- (BOOL)keepBackupFile {
-    return ![[NSUserDefaults standardUserDefaults] boolForKey:DeleteBackup];
-}
-
 /* When a document is changed, it ceases to be transient. 
 */
 - (void)updateChangeCount:(NSDocumentChangeType)change {
@@ -911,17 +944,26 @@ Firstly, since the dirty state tracking is based on undo, for a coalesced set of
 
 In addition we overwrite this method as a way to tell that the document has been saved successfully. If so, we set the save time parameters in the document.
 */
-- (BOOL)saveToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation error:(NSError **)outError {
+- (void)saveToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation completionHandler:(void (^)(NSError *error))handler {
     // Note that we do the breakUndoCoalescing call even during autosave, which means the user's undo of long typing will take them back to the last spot an autosave occured. This might seem confusing, and a more elaborate solution may be possible (cause an autosave without having to breakUndoCoalescing), but since this change is coming late in Leopard, we decided to go with the lower risk fix.
     [[self windowControllers] makeObjectsPerformSelector:@selector(breakUndoCoalescing)];
-
-    BOOL success = [super saveToURL:absoluteURL ofType:typeName forSaveOperation:saveOperation error:outError];
-    if (success && (saveOperation == NSSaveOperation || (saveOperation == NSSaveAsOperation))) {    // If successful, set document parameters changed during the save operation
-	if ([self encodingForSaving] != NoStringEncoding) [self setEncoding:[self encodingForSaving]];
-    }
-    [self setEncodingForSaving:NoStringEncoding];   // This is set during prepareSavePanel:, but should be cleared for future save operation without save panel
-    return success;    
+    
+    [super saveToURL:absoluteURL ofType:typeName forSaveOperation:saveOperation completionHandler:^(NSError *error) {
+        BOOL success = (error == nil);
+        if (success && (saveOperation == NSSaveOperation || (saveOperation == NSSaveAsOperation))) {    // If successful, set document parameters changed during the save operation; ideally this should be done earlier
+            if ([self encodingForSaving] != NoStringEncoding) [self setEncoding:[self encodingForSaving]];
+        }
+        [self setEncodingForSaving:NoStringEncoding];   // This is set during prepareSavePanel:, but should be cleared for future save operation without save panel
+        handler(error);
+    }];
 }
+
+/* Indicate the types we know we can save safely asynchronously.
+*/
+- (BOOL)canAsynchronouslyWriteToURL:(NSURL *)url ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation {
+    return [[self class] canConcurrentlyReadDocumentsOfType:typeName];
+}
+
 
 /* Since a document into which the user has dragged graphics should autosave as RTFD, we override this method to return RTFD, unless the document was already RTFD, WebArchive, or plain (the last one done for optimization, to avoid calling containsAttachments).
 */
@@ -1066,10 +1108,10 @@ In addition we overwrite this method as a way to tell that the document has been
     NSString *string;
     
     if (defaultDestination) {
-	NSString *dirPath = [[defaultDestination path] stringByDeletingPathExtension];
+	NSURL *directory = [defaultDestination URLByDeletingPathExtension];
 	BOOL isDir;
-	if ([[NSFileManager defaultManager] fileExistsAtPath:dirPath isDirectory:&isDir] && isDir) {
-	    [savePanel setDirectory:dirPath];
+	if ([[NSFileManager defaultManager] fileExistsAtPath:[directory path] isDirectory:&isDir] && isDir) {
+	    [savePanel setDirectoryURL:directory];
 	}
     }
     

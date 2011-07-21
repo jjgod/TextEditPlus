@@ -12,3 +12,8 @@
 - (CGFloat)scaleFactor;
 
 @end
+
+@protocol ScalingScrollViewDocument
+@optional
+- (BOOL)showsScalePopUpButton;
+@end

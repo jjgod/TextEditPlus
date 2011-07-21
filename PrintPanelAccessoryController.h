@@ -1,11 +1,16 @@
 #import <Cocoa/Cocoa.h>
 
 
-@interface PrintPanelAccessoryController : NSViewController <NSPrintPanelAccessorizing>
+@interface PrintPanelAccessoryController : NSViewController <NSPrintPanelAccessorizing> {
+    BOOL showsWrappingToFit;
+    BOOL wrappingToFit;
+}
 
 - (IBAction)changePageNumbering:(id)sender;
+- (IBAction)changeWrappingToFit:(id)sender;
 
-- (void)setPageNumbering:(BOOL)flag;
-- (BOOL)pageNumbering;
+@property BOOL pageNumbering;
+@property BOOL wrappingToFit;
+@property BOOL showsWrappingToFit;
 
 @end

@@ -30,9 +30,13 @@
     BOOL lossyDocument;			/* Loaded lossily, so might not be a good idea to overwrite */
     BOOL transient;			/* Untitled document automatically opened and never modified */
     NSURL *defaultDestination;		/* A hint as to where save dialog should default, used if -fileURL is nil */
-    
+    NSArray *originalOrientationSections; /* An array of dictionaries. Each describing the text layout orientation for a page */
+
     // Temporary information about how to save the document
     NSStringEncoding documentEncodingForSaving;	    /* NSStringEncoding for saving the document */
+    
+    // Temporary information about document's desired file type
+    NSString *fileTypeToSet;		/* Actual file type determined during a read, and set after the read (which includes revert) is complete. */ 
 }
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName encoding:(NSStringEncoding)encoding ignoreRTF:(BOOL)ignoreRTF ignoreHTML:(BOOL)ignoreHTML error:(NSError **)outError;
@@ -115,4 +119,7 @@
 - (void)setTransient:(BOOL)flag;
 - (BOOL)isTransientAndCanBeReplaced;
 
+/* Layout orientation sections */
+- (NSArray *)originalOrientationSections;
+- (void)setOriginalOrientationSections:(NSArray *)array;
 @end

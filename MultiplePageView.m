@@ -1,6 +1,6 @@
 /*
         MultiplePageView.m
-        Copyright (c) 1995-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
         Author: Ali Ozer
 
         View which holds all the pages together in the multiple-page case
@@ -40,7 +40,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import "MultiplePageView.h"
-#import "Document.h"	// For defaultTextPadding();
 #import "TextEditMisc.h"
 
 @implementation MultiplePageView
@@ -68,8 +67,13 @@
     if ([self superview]) {
         NSRect rect = NSZeroRect;
         rect.size = [printInfo paperSize];
-        rect.size.height = rect.size.height * numPages;
-        if (numPages > 1) rect.size.height += [self pageSeparatorHeight] * (numPages - 1);
+        if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
+            rect.size.height = rect.size.height * numPages;
+            if (numPages > 1) rect.size.height += [self pageSeparatorHeight] * (numPages - 1);
+        } else {
+            rect.size.width = rect.size.width * numPages;
+            if (numPages > 1) rect.size.width += [self pageSeparatorHeight] * (numPages - 1);
+        }
         rect.size = [self convertSize:rect.size toView:[self superview]];
         [self setFrame:rect];
     }
@@ -115,10 +119,7 @@
 }
 
 - (NSSize)documentSizeInPage {
-    NSSize paperSize = [printInfo paperSize];
-    paperSize.width -= ([printInfo leftMargin] + [printInfo rightMargin]) - defaultTextPadding() * 2.0;
-    paperSize.height -= ([printInfo topMargin] + [printInfo bottomMargin]);
-    return paperSize;
+    return documentSizeForPrintInfo(printInfo);
 }
 
 - (NSRect)documentRectForPageNumber:(NSUInteger)pageNumber {	/* First page is page 0, of course! */
@@ -133,7 +134,12 @@
     NSRect rect;
     rect.size = [printInfo paperSize];
     rect.origin = [self frame].origin;
-    rect.origin.y += ((rect.size.height + [self pageSeparatorHeight]) * pageNumber);
+
+    if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
+        rect.origin.y += ((rect.size.height + [self pageSeparatorHeight]) * pageNumber);
+    } else {
+        rect.origin.x += (NSWidth([self bounds]) - ((rect.size.width + [self pageSeparatorHeight]) * (pageNumber + 1)));
+    }
     return rect;
 }
 
@@ -161,13 +167,33 @@
     return marginColor;
 }
 
+- (void)setLayoutOrientation:(NSTextLayoutOrientation)orientation {
+    if (orientation != layoutOrientation) {
+        layoutOrientation = orientation;
+
+        [self updateFrame];
+    }
+}
+
+- (NSTextLayoutOrientation)layoutOrientation {
+    return layoutOrientation;
+}
+
 - (void)drawRect:(NSRect)rect {
     if ([[NSGraphicsContext currentContext] isDrawingToScreen]) {
         NSSize paperSize = [printInfo paperSize];
-        NSUInteger firstPage = rect.origin.y / (paperSize.height + [self pageSeparatorHeight]);
-        NSUInteger lastPage = NSMaxY(rect) / (paperSize.height + [self pageSeparatorHeight]);
+        NSUInteger firstPage;
+        NSUInteger lastPage;
         NSUInteger cnt;
-        
+
+        if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
+            firstPage = NSMinY(rect) / (paperSize.height + [self pageSeparatorHeight]);
+            lastPage = NSMaxY(rect) / (paperSize.height + [self pageSeparatorHeight]);
+        } else {
+            firstPage = numPages - (NSMaxX(rect) / (paperSize.width + [self pageSeparatorHeight]));
+            lastPage = numPages - (NSMinX(rect) / (paperSize.width + [self pageSeparatorHeight]));
+        }
+
         [marginColor set];
         NSRectFill(rect);
 
@@ -183,7 +209,13 @@
             [backgroundColor set];
             for (cnt = firstPage; cnt <= lastPage; cnt++) {
 		NSRect pageRect = [self pageRectForPageNumber:cnt];
-		NSRectFill (NSMakeRect(pageRect.origin.x, NSMaxY(pageRect), pageRect.size.width, [self pageSeparatorHeight]));
+                NSRect separatorRect;
+                if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
+                    separatorRect = NSMakeRect(NSMinX(pageRect), NSMaxY(pageRect), NSWidth(pageRect), [self pageSeparatorHeight]);
+                } else {
+                    separatorRect = NSMakeRect(NSMaxX(pageRect), NSMinY(pageRect), [self pageSeparatorHeight], NSHeight(pageRect));
+                }
+		NSRectFill (separatorRect);
             }
         }
     }
@@ -207,4 +239,15 @@
     return NSMakePoint((paperSize.width - rect.size.width) / 2.0, (paperSize.height - rect.size.height) / 2.0);
 }
 
+- (BOOL)showsScalePopUpButton { return YES; }
+
 @end
+
+
+NSSize documentSizeForPrintInfo(NSPrintInfo *printInfo) {
+    NSSize paperSize = [printInfo paperSize];
+    paperSize.width -= ([printInfo leftMargin] + [printInfo rightMargin]) - defaultTextPadding() * 2.0;
+    paperSize.height -= ([printInfo topMargin] + [printInfo bottomMargin]);
+    return paperSize;
+}
+

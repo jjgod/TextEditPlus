@@ -5,6 +5,7 @@
     NSColor *lineColor;
     NSColor *marginColor;
     NSUInteger numPages;
+    NSTextLayoutOrientation layoutOrientation;
 }
 
 - (void)setPrintInfo:(NSPrintInfo *)anObject;
@@ -19,5 +20,7 @@
 - (NSColor *)lineColor;
 - (void)setMarginColor:(NSColor *)color;
 - (NSColor *)marginColor;
+- (void)setLayoutOrientation:(NSTextLayoutOrientation)orientation;
+- (NSTextLayoutOrientation)layoutOrientation;
 
 @end

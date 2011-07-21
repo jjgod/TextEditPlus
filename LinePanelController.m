@@ -1,6 +1,6 @@
 /*
         LinePanelController.m
-        Copyright (c) 2007-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 2007-2011 by Apple Computer, Inc., all rights reserved.
         Author: Ali Ozer
 
         "Select Line" panel controller for TextEdit. 
@@ -43,11 +43,25 @@
 #import "LinePanelController.h"
 #import "TextEditErrors.h"
 #import "TextEditMisc.h"
+#import "Controller.h"
 
 @implementation LinePanelController
 
 - (id)init {
     return [super initWithWindowNibName:@"SelectLinePanel"];
+}
+
+- (void)windowDidLoad {
+    NSWindow *window = [self window];
+    [window setIdentifier:@"Line"];
+    [window setRestorationClass:[self class]];
+    [super windowDidLoad];  // It's documented to do nothing, but still a good idea to invoke...
+}
+
+/* Reopen the line panel when the app's persistent state is restored. 
+*/
++ (void)restoreWindowWithIdentifier:(NSString *)identifier state:(NSCoder *)state completionHandler:(void (^)(NSWindow *, NSError *))completionHandler {
+    completionHandler([[(Controller *)[NSApp delegate] lineController] window], NULL);
 }
 
 /* A short and sweet example of use of NSScanner. Parses user's line specification, in the form of N, or N-M, or +N-M, or -N-M. Returns NO on error. Assumes none of the out parameters are NULL!

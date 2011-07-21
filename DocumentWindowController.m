@@ -1,6 +1,6 @@
 /*
         DocumentWindowController.m
-        Copyright (c) 1995-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
         Author: David Remahl, adapted from old Document.m
  
         Document's main window controller object for TextEdit
@@ -54,6 +54,9 @@
 - (void)setupTextViewForDocument;
 - (void)setupWindowForDocument;
 - (void)updateForRichTextAndRulerState;
+- (void)setupPagesViewForLayoutOrientation:(NSTextLayoutOrientation)orientation;
+
+- (void)doToggleRichAfterSaving;
 
 - (void)showRulerDelayed:(BOOL)flag;
 
@@ -88,7 +91,7 @@
     
     [[self firstTextView] removeObserver:self forKeyPath:@"backgroundColor"];
     [scrollView removeObserver:self forKeyPath:@"scaleFactor"];
-    
+    [[scrollView verticalScroller] removeObserver:self forKeyPath:@"scrollerStyle"];
     [layoutMgr release];
     
     [self showRulerDelayed:NO];
@@ -100,7 +103,7 @@
 	1) When the window controller is created and set up with a new or opened document. (!oldDoc && doc)
 	2) When the document is closed, and the controller is about to be destroyed (oldDoc && !doc)
 	3) When the window controller is assigned to another document (a document has been opened and it takes the place of an automatically-created window).  In that case this method is called twice.  First as #2 above, second as #1.
-
+ 
    The window can be visible or hidden at the time of the message.
 */
 - (void)setDocument:(Document *)doc {
@@ -127,12 +130,12 @@
 	}
 	
 	if (doc) {
-	    JJTypesetter *typesetter = [[JJTypesetter alloc] init];
-	    [typesetter setEnabled: [doc isRichText] ? NO : YES];
-	    [layoutMgr setTypesetter:typesetter];
-            [[doc textStorage] addLayoutManager:layoutMgr];
-	    [typesetter release];
-	    
+        JJTypesetter *typesetter = [[JJTypesetter alloc] init];
+        [typesetter setEnabled: [doc isRichText] ? NO : YES];
+        [layoutMgr setTypesetter:typesetter];
+        [[doc textStorage] addLayoutManager:layoutMgr];
+        [typesetter release];
+
 	    if ([self isWindowLoaded]) {
                 [self setHasMultiplePages:[doc hasMultiplePages] force:NO];
                 [self setupInitialTextViewSharedState];
@@ -167,10 +170,12 @@
     NSTextView *textView = [self firstTextView];
     
     [textView setUsesFontPanel:YES];
-    [textView setUsesFindPanel:YES];
+    [textView setUsesFindBar:YES];
+    [textView setIncrementalSearchingEnabled:YES];
     [textView setDelegate:self];
     [textView setAllowsUndo:YES];
     [textView setAllowsDocumentBackgroundColorChange:YES];
+    [textView setIdentifier:@"First Text View"];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
@@ -199,6 +204,13 @@
 	if ([keyPath isEqualToString:@"scaleFactor"]) {
 	    [[self document] setScaleFactor:[scrollView scaleFactor]];
 	} 
+    } else if (object == [scrollView verticalScroller]) {
+        if ([keyPath isEqualToString:@"scrollerStyle"]) {
+            NSSize size = [[self document] viewSize];
+            if (!NSEqualSizes(size, NSZeroSize)) {
+                [self resizeWindowForViewSize:size];
+            }
+        }
     } else if (object == [self document]) {
 	if ([keyPath isEqualToString:@"printInfo"]) {
 	    [self printInfoUpdated];
@@ -221,12 +233,29 @@
 
 - (void)setupTextViewForDocument {
     Document *doc = [self document];
+    NSArray *sections = [doc originalOrientationSections];
+    NSTextLayoutOrientation orientattion = NSTextLayoutOrientationHorizontal;
     BOOL rich = [doc isRichText];
     
     if (doc && (!rich || [[[self firstTextView] textStorage] length] == 0)) [[self firstTextView] setTypingAttributes:[doc defaultTextAttributes:rich]];
     [self updateForRichTextAndRulerState];
     
     [[self firstTextView] setBackgroundColor:[doc backgroundColor]];
+    
+    // process the initial container
+    if ([sections count] > 0) {
+        for (NSDictionary *dict in sections) {
+            id rangeValue = [dict objectForKey:NSTextLayoutSectionRange];
+            
+            if (!rangeValue || NSLocationInRange(0, [rangeValue rangeValue])) {
+                orientattion = NSTextLayoutOrientationVertical;
+                [[self firstTextView] setLayoutOrientation:orientattion];
+                break;
+            }
+        }
+    }
+
+    if (hasMultiplePages && (orientattion != NSTextLayoutOrientationHorizontal)) [self setupPagesViewForLayoutOrientation:orientattion];
 }
 
 - (void)printInfoUpdated {
@@ -303,7 +332,7 @@
 	    NSInteger numberOfErrors = 0;
 	    NSError *error = nil;
 	    NSMutableAttributedString *attachments = [[NSMutableAttributedString alloc] init];
-
+            
 	    // Process all the attachments, creating an attributed string 
 	    for (NSURL *url in urls) {
 		NSFileWrapper *wrapper = [[NSFileWrapper alloc] initWithURL:url options:NSFileWrapperReadingImmediate error:&error];
@@ -328,7 +357,7 @@
 	    [attachments release];
 	    
 	    [panel orderOut:nil];   // Strictly speaking not necessary, but if we put up an error sheet, a good idea for the panel to be dismissed first
-
+            
 	    // Deal with errors opening some or all of the attachments
 	    if (numberOfErrors > 0) {
 		if (numberOfErrors > 1) {  // More than one failure, put up a summary error (which doesn't do a good job of communicating the actual errors, but multiple attachments is a relatively rare case). For one error, we present the actual NSError we got back.
@@ -339,7 +368,7 @@
 		[[self window] presentError:error modalForWindow:[self window] delegate:nil didPresentSelector:NULL contextInfo:NULL];
 	    }
 	}
-     }];
+    }];
 }
 
 
@@ -352,9 +381,20 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     
     [view setRichText:rich];
     [view setUsesRuler:rich];	// If NO, this correctly gets rid of the ruler if it was up
+    [view setUsesInspectorBar:rich];
     if (!rich && rulerIsBeingDisplayed) [self showRulerDelayed:NO];	// Cancel delayed ruler request
     if (rich && ![[self document] isReadOnly]) [self showRulerDelayed:YES];
     [view setImportsGraphics:rich];
+}
+
+- (void)configureTypingAttributesAndDefaultParagraphStyleForTextView:(NSTextView *)view {
+    Document *doc = [self document];
+    BOOL rich = [doc isRichText];
+    NSDictionary *textAttributes = [doc defaultTextAttributes:rich];
+    NSParagraphStyle *paragraphStyle = [textAttributes objectForKey:NSParagraphStyleAttributeName];
+
+    [view setTypingAttributes:textAttributes];
+    [view setDefaultParagraphStyle:paragraphStyle];
 }
 
 - (void)convertTextForRichTextStateRemoveAttachments:(BOOL)attachmentFlag {
@@ -384,6 +424,25 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     return hasMultiplePages ? [[scrollView documentView] numberOfPages] : 1;
 }
 
+- (void)updateTextViewGeometry {
+    MultiplePageView *pagesView = [scrollView documentView];
+
+    [[[self layoutManager] textContainers] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [[obj textView] setFrame:[pagesView documentRectForPageNumber:idx]];
+    }];
+}
+
+- (void)setupPagesViewForLayoutOrientation:(NSTextLayoutOrientation)orientation {
+    MultiplePageView *pagesView = [scrollView documentView];
+    
+    [pagesView setLayoutOrientation:orientation];
+    [[self firstTextView] setLayoutOrientation:orientation];
+    [self updateTextViewGeometry];
+    
+    [scrollView setHasHorizontalRuler:(NSTextLayoutOrientationHorizontal == orientation) ? YES : NO];
+    [scrollView setHasVerticalRuler:(NSTextLayoutOrientationHorizontal == orientation) ? NO : YES];
+}
+
 - (void)addPage {
     NSZone *zone = [self zone];
     NSUInteger numberOfPages = [self numberOfPages];
@@ -392,12 +451,32 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     NSSize textSize = [pagesView documentSizeInPage];
     NSTextContainer *textContainer = [[NSTextContainer allocWithZone:zone] initWithContainerSize:textSize];
     NSTextView *textView;
+    NSUInteger orientation = [pagesView layoutOrientation];
+    NSRect visibleRect = [pagesView visibleRect];
+    CGFloat originalWidth = NSWidth([pagesView bounds]);
+
+    [textContainer setWidthTracksTextView:YES];
+    [textContainer setHeightTracksTextView:YES];
+
     [pagesView setNumberOfPages:numberOfPages + 1];
+    if (NSTextLayoutOrientationVertical == [pagesView layoutOrientation]) {
+        visibleRect.origin.x += (NSWidth([pagesView bounds]) - originalWidth);
+        [pagesView scrollRectToVisible:visibleRect];
+    }
+
     textView = [[NSTextView allocWithZone:zone] initWithFrame:[pagesView documentRectForPageNumber:numberOfPages] textContainer:textContainer];
+    [textView setLayoutOrientation:orientation];
     [textView setHorizontallyResizable:NO];
     [textView setVerticallyResizable:NO];
+
+    if (NSTextLayoutOrientationVertical == orientation) { // Adjust the initial container size
+        textSize = NSMakeSize(textSize.height, textSize.width); // Translate size
+        [textContainer setContainerSize:textSize];
+    }
+    [self configureTypingAttributesAndDefaultParagraphStyleForTextView:textView];
     [pagesView addSubview:textView];
     [[self layoutManager] addTextContainer:textContainer];
+
     [textView release];
     [textContainer release];
 }
@@ -418,6 +497,7 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 }
 
 - (void)setHasMultiplePages:(BOOL)pages force:(BOOL)force {
+    NSTextLayoutOrientation orientation = NSTextLayoutOrientationHorizontal;
     NSZone *zone = [self zone];
     
     if (!force && (hasMultiplePages == pages)) return;
@@ -426,7 +506,15 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     
     [[self firstTextView] removeObserver:self forKeyPath:@"backgroundColor"];
     [[self firstTextView] unbind:@"editable"];
-    
+
+    if ([self firstTextView]) {
+        orientation = [[self firstTextView] layoutOrientation];
+    } else {
+        NSArray *sections = [[self document] originalOrientationSections];
+
+        if (([sections count] > 0) && (NSTextLayoutOrientationVertical == [[[sections objectAtIndex:0] objectForKey:NSTextLayoutSectionOrientation] unsignedIntegerValue])) orientation = NSTextLayoutOrientationVertical;
+    }
+
     if (hasMultiplePages) {
         NSTextView *textView = [self firstTextView];
         MultiplePageView *pagesView = [[MultiplePageView allocWithZone:zone] init];
@@ -434,13 +522,19 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
         [scrollView setDocumentView:pagesView];
 	
         [pagesView setPrintInfo:[[self document] printInfo]];
+        [pagesView setLayoutOrientation:orientation];
+
         // Add the first new page before we remove the old container so we can avoid losing all the shared text view state.
         [self addPage];
         if (textView) {
             [[self layoutManager] removeTextContainerAtIndex:0];
         }
+
+        if (NSTextLayoutOrientationVertical == orientation) [self updateTextViewGeometry];
+        
+        [scrollView setHasVerticalScroller:YES];
         [scrollView setHasHorizontalScroller:YES];
-	
+
         // Make sure the selected text is shown
         [[self firstTextView] scrollRangeToVisible:[[self firstTextView] selectedRange]];
 	
@@ -472,7 +566,7 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
                 [[self layoutManager] removeTextContainerAtIndex:cnt];
             }
         }
-	
+
         [textContainer setWidthTracksTextView:YES];
         [textContainer setHeightTracksTextView:NO];		/* Not really necessary */
         [textView setHorizontallyResizable:NO];			/* Not really necessary */
@@ -480,18 +574,25 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 	[textView setAutoresizingMask:NSViewWidthSizable];
         [textView setMinSize:size];	/* Not really necessary; will be adjusted by the autoresizing... */
         [textView setMaxSize:NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX)];	/* Will be adjusted by the autoresizing... */  
-	
+        [self configureTypingAttributesAndDefaultParagraphStyleForTextView:textView];
+
+        [textView setLayoutOrientation:orientation]; // this configures the above settings
+
         /* The next line should cause the multiple page view and everything else to go away */
         [scrollView setDocumentView:textView];
-        [scrollView setHasHorizontalScroller:NO];
-        
+        [scrollView setHasHorizontalScroller:((orientation == NSTextLayoutOrientationHorizontal) ? NO : YES)];
+        [scrollView setHasVerticalScroller:((orientation == NSTextLayoutOrientationHorizontal) ? YES : NO)];
+
         [textView release];
         [textContainer release];
 	
         // Show the selected region
         [[self firstTextView] scrollRangeToVisible:[[self firstTextView] selectedRange]];
     }
-    
+
+    [scrollView setHasHorizontalRuler:((orientation == NSTextLayoutOrientationHorizontal) ? YES : NO)];
+    [scrollView setHasVerticalRuler:((orientation == NSTextLayoutOrientationHorizontal) ? NO : YES)];
+
     [[self firstTextView] addObserver:self forKeyPath:@"backgroundColor" options:0 context:NULL];
     [[self firstTextView] bind:@"editable" toObject:self withKeyPath:@"document.readOnly" options:[NSDictionary dictionaryWithObject:NSNegateBooleanTransformerName forKey:NSValueTransformerNameBindingOption]];
     
@@ -502,11 +603,15 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 - (void)resizeWindowForViewSize:(NSSize)size {
     NSWindow *window = [self window];
     NSRect origWindowFrame = [window frame];
+    NSScrollerStyle scrollerStyle;
     if (![[self document] hasMultiplePages]) {
 	size.width += (defaultTextPadding() * 2.0);
+        scrollerStyle = [NSScroller preferredScrollerStyle];
+    } else {
+        scrollerStyle = NSScrollerStyleLegacy;  // For the wrap-to-page case, which uses legacy style scrollers for now
     }
     NSRect scrollViewRect = [[window contentView] frame];
-    scrollViewRect.size = [[scrollView class] frameSizeForContentSize:size hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
+    scrollViewRect.size = [[scrollView class] frameSizeForContentSize:size horizontalScrollerClass:[scrollView hasHorizontalScroller] ? [NSScroller class] : Nil verticalScrollerClass:[scrollView hasVerticalScroller] ? [NSScroller class] : Nil borderType:[scrollView borderType] controlSize:NSRegularControlSize scrollerStyle:scrollerStyle];
     NSRect newFrame = [window frameRectForContentRect:scrollViewRect];
     newFrame.origin = NSMakePoint(origWindowFrame.origin.x, NSMaxY(origWindowFrame) - newFrame.size.height);
     [window setFrame:newFrame display:YES];
@@ -552,28 +657,13 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     // Changes to the zoom popup need to be communicated to the document
     if ([[self document] hasMultiplePages]) [scrollView setScaleFactor:[[self document] scaleFactor] adjustPopup:YES];
     [scrollView addObserver:self forKeyPath:@"scaleFactor" options:0 context:NULL];
-    
+    [[scrollView verticalScroller] addObserver:self forKeyPath:@"scrollerStyle" options:0 context:NULL];
     [[[self document] undoManager] removeAllActions];
 }
 
 - (void)setDocumentEdited:(BOOL)edited {
     [super setDocumentEdited:edited];
-}
-
-/* This method causes the text to be laid out in the foreground (approximately) up to the indicated character index.
-*/
-- (void)doForegroundLayoutToCharacterIndex:(NSUInteger)loc {
-    NSUInteger len;
-    if (loc > 0 && (len = [[[self document] textStorage] length]) > 0) {
-        NSRange glyphRange;
-        if (loc >= len) loc = len - 1;
-        /* Find out which glyph index the desired character index corresponds to */
-        glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(loc, 1) actualCharacterRange:NULL];
-        if (glyphRange.location > 0) {
-            /* Now cause layout by asking a question which has to determine where the glyph is */
-            (void)[[self layoutManager] textContainerForGlyphAtIndex:glyphRange.location - 1 effectiveRange:NULL];
-        }
-    }
+    if (edited) [[self document] setOriginalOrientationSections:nil];
 }
 
 /* doToggleRich, called from toggleRich: or the endToggleRichSheet:... alert panel method, toggles the isRichText state (with undo)
@@ -585,17 +675,56 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     
     [undoMgr registerUndoWithTarget:doc selector:@selector(setFileType:) object:[doc fileType]];
     [undoMgr registerUndoWithTarget:self selector:@selector(doToggleRichWithNewURL:) object:[doc fileURL]];
-
+    
     [doc setRichText:newRich];
     [doc setFileURL:newURL];
     [self convertTextForRichTextStateRemoveAttachments:rich];
-
-    JJTypesetter *ts = (JJTypesetter *)[[[self firstTextView] layoutManager] typesetter];
-    [ts setEnabled: newRich ? NO : YES];
     
     if (![undoMgr isUndoing]) {
 	[undoMgr setActionName:newRich ? NSLocalizedString(@"Make Rich Text", @"Undo menu item text (without 'Undo ') for making a document rich text") : NSLocalizedString(@"Make Plain Text", @"Undo menu item text (without 'Undo ') for making a document plain text")];
     }
+}
+
+/* Layout orientation sections */
+- (NSArray *)layoutOrientationSections {
+    NSArray *textContainers = [layoutMgr textContainers];
+    NSMutableArray *sections = nil;
+    NSUInteger layoutOrientation = 0; // horizontal
+    NSRange range = NSMakeRange(0, 0);
+    
+    for (NSTextContainer *container in textContainers) {
+        NSUInteger newOrientation = [container layoutOrientation];
+        
+        if (newOrientation != layoutOrientation) {
+            if (range.length > 0) {
+                if (!sections) sections = [NSMutableArray arrayWithCapacity:0];
+                
+                [sections addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:layoutOrientation], NSTextLayoutSectionOrientation, [NSValue valueWithRange:range], NSTextLayoutSectionRange, nil]];
+                
+                range.length = 0;
+            }
+            
+            layoutOrientation = newOrientation;
+        }
+        
+        if (layoutOrientation > 0) {
+            NSRange containerRange = [layoutMgr characterRangeForGlyphRange:[layoutMgr glyphRangeForTextContainer:container] actualGlyphRange:NULL];
+            
+            if (range.length == 0) {
+                range = containerRange;
+            } else {
+                range.length = NSMaxRange(containerRange) - range.location;
+            }
+        }
+    }
+    
+    if (range.length > 0) {
+        if (!sections) sections = [NSMutableArray arrayWithCapacity:0];
+        
+        [sections addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:layoutOrientation], NSTextLayoutSectionOrientation, [NSValue valueWithRange:range], NSTextLayoutSectionRange, nil]];
+    }
+    
+    return sections;
 }
 
 /* toggleRich: puts up an alert before ultimately calling -doToggleRichWithNewURL:
@@ -608,14 +737,45 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 			  self, NULL, @selector(didEndToggleRichSheet:returnCode:contextInfo:), NULL,
 			  NSLocalizedString(@"Making a rich text document plain will lose all text styles (such as fonts and colors), images, attachments, and document properties.", @"Subtitle of alert confirming Make Plain Text"));
     } else {
-        [self doToggleRichWithNewURL:nil];
+        [self doToggleRichAfterSaving];
     }
 }
 
 - (void)didEndToggleRichSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo {
-    if (returnCode == NSAlertDefaultReturn) [self doToggleRichWithNewURL:nil];
+    if (returnCode == NSAlertDefaultReturn) [self doToggleRichAfterSaving];
 }
 
+/* An intermediary which causes the document to be saved before toggling rich state, if the document exists in the filesystem.
+*/
+- (void)doToggleRichAfterSaving {
+    Document *document = [self document];
+    if ([document fileURL] && [document isDocumentEdited]) {
+	[document autosaveDocumentWithDelegate:self didAutosaveSelector:@selector(document:didAutosave:contextInfo:) contextInfo:NULL];
+    } else {
+	[self doToggleRichWithNewURL:nil];
+    }
+}
+
+- (void)document:(Document *)document didAutosave:(BOOL)saved contextInfo:(void *)contextInfo {
+    // If the save was unsuccessful, then we don't toggle the document format
+    if (saved) [self doToggleRichWithNewURL:nil];
+}
+
+/* Layout orientation
+ */
+- (void)toggleLayoutOrientation:(id)sender {
+    NSInteger tag = [sender tag];
+
+    if (hasMultiplePages) {
+        NSUInteger count = [[[self layoutManager] textContainers] count];
+
+        while (count-- > 1) [self removePage]; // remove 2nd ~ nth pages
+
+        [self setupPagesViewForLayoutOrientation:tag];
+    } else {
+        [[self firstTextView] setLayoutOrientation:[sender tag]];
+    }
+}
 @end
 
 
@@ -634,7 +794,7 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 	
         // Get a frame for the window content, which is a scrollView
         newScrollView.origin = NSZeroPoint;
-        newScrollView.size = [[scrollView class] frameSizeForContentSize:paperSize hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
+        newScrollView.size = [[scrollView class] frameSizeForContentSize:paperSize horizontalScrollerClass:[scrollView hasHorizontalScroller] ? [NSScroller class] : Nil verticalScrollerClass:[scrollView hasVerticalScroller] ? [NSScroller class] : Nil borderType:[scrollView borderType] controlSize:NSRegularControlSize scrollerStyle:NSScrollerStyleLegacy];
 	
         // The standard frame for the window is now the frame that will fit the scrollView content
         standardFrame.size = [[window class] frameRectForContentRect:newScrollView styleMask:[window styleMask]].size;
@@ -649,7 +809,7 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 
 - (void)windowDidResize:(NSNotification *)notification {
     [[self document] setTransient:NO]; // Since the user has taken an interest in the window, clear the document's transient status
-
+    
     if (!isSettingSize) {   // There is potential for recursion, but typically this is prevented in NSWindow which doesn't call this method if the frame doesn't change. However, just in case...
 	isSettingSize = YES;
 	NSSize viewSize = [[scrollView class] contentSizeForFrameSize:[scrollView frame].size hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
@@ -713,23 +873,20 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     return YES;
 }
 
-- (void)textView:(NSTextView *)view doubleClickedOnCell:(id <NSTextAttachmentCell>)cell inRect:(NSRect)rect {
-    BOOL success = NO;
-    NSString *name = [[[cell attachment] fileWrapper] filename];
-    NSURL *docURL = [[self document] fileURL];
-    if (docURL && name && [docURL isFileURL]) {
-	NSString *docPath = [docURL path];
-    	NSString *pathToAttachment = [docPath stringByAppendingPathComponent:name];
-        if (pathToAttachment) success = [[NSWorkspace sharedWorkspace] openFile:pathToAttachment];
+- (NSURL *)textView:(NSTextView *)textView URLForContentsOfTextAttachment:(NSTextAttachment *)textAttachment atIndex:(NSUInteger)charIndex {
+    NSURL *attachmentURL = nil;
+    NSString *name = [[textAttachment fileWrapper] filename];
+
+    if (name) {
+        Document *document = [self document];
+        NSURL *docURL = [document fileURL];
+
+        if (!docURL) docURL = [document autosavedContentsFileURL];
+
+        if (docURL && [docURL isFileURL]) attachmentURL = [docURL URLByAppendingPathComponent:name];
     }
-    if (!success) {
-        if ([[self document] isDocumentEdited]) {
-	    NSBeginAlertSheet(NSLocalizedString(@"The attached document could not be opened.", @"Title of alert indicating attached document in TextEdit file could not be opened."),
-			      NSLocalizedString(@"OK", @"OK"), nil, nil, [view window], self, NULL, NULL, nil, 
-			      NSLocalizedString(@"This is likely because the file has not yet been saved.  If possible, try again after saving.", @"Message indicating text attachment could not be opened, likely because document has not yet been saved."));
-	}
-        NSBeep();
-    }
+    
+    return attachmentURL;
 }
 
 - (NSArray *)textView:(NSTextView *)view writablePasteboardTypesForCell:(id <NSTextAttachmentCell>)cell atIndex:(NSUInteger)charIndex {
@@ -756,6 +913,7 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 
 - (void)layoutManager:(NSLayoutManager *)layoutManager didCompleteLayoutForTextContainer:(NSTextContainer *)textContainer atEnd:(BOOL)layoutFinishedFlag {
     if (hasMultiplePages) {
+        MultiplePageView *pagesView = [scrollView documentView];
         NSArray *containers = [layoutManager textContainers];
 	
         if (!layoutFinishedFlag || (textContainer == nil)) {
@@ -765,7 +923,10 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
             if ((textContainer == lastContainer) || (textContainer == nil)) {
                 // Add a new page if the newly full container is the last container or the nowhere container.
                 // Do this only if there are glyphs laid in the last container (temporary solution for 3729692, until AppKit makes something better available.)
-                if ([layoutManager glyphRangeForTextContainer:lastContainer].length > 0) [self addPage];
+                if ([layoutManager glyphRangeForTextContainer:lastContainer].length > 0) {
+                    [self addPage];
+                    if (NSTextLayoutOrientationVertical == [pagesView layoutOrientation]) [self updateTextViewGeometry];
+                }
             }
         } else {
             // Layout is done and it all fit.  See if we can axe some pages.
@@ -774,6 +935,10 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
             while (++lastUsedContainerIndex < numContainers) {
                 [self removePage];
             }
+            
+            if (NSTextLayoutOrientationVertical == [pagesView layoutOrientation]) [self updateTextViewGeometry];
+
+            [[self document] setOriginalOrientationSections:nil];
         }
     }
 }
@@ -790,8 +955,73 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
         if ([[self document] isReadOnly]) return NO;
     } else if (action == @selector(chooseAndAttachFiles:)) {
         return [[self document] isRichText] && ![[self document] isReadOnly];
+    } else if (action == @selector(toggleLayoutOrientation:)) {
+        NSString *title = nil;
+        NSTextLayoutOrientation orientation = [[self firstTextView] layoutOrientation];;
+
+        if (NSTextLayoutOrientationHorizontal == orientation) {
+            title = NSLocalizedString(@"Make Layout Vertical", @"Menu item ot make the current document layout vertical");
+            orientation = NSTextLayoutOrientationVertical;
+        } else {
+            title = NSLocalizedString(@"Make Layout Horizontal", @"Menu item ot make the current document layout horizontal");
+            orientation = NSTextLayoutOrientationHorizontal;
+        }
+
+        [aCell setTitle:title];
+        [aCell setTag:orientation];
+
+        if ([[self document] isReadOnly]) return NO;
     }
     return YES;
 }
 
+- (NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex {
+    // Removing layout orientation menu item in multipage mode for enforcing the document-wide setting
+    if (hasMultiplePages) {
+        [[menu itemArray] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            BOOL remove = NO;
+            if ([obj action] == @selector(changeLayoutOrientation:)) {
+                remove = YES;
+            } else {
+                NSMenu *submenu = [obj submenu];
+
+                if (submenu) {
+                    [[submenu itemArray] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                        if ([obj action] == @selector(changeLayoutOrientation:)) [submenu removeItem:obj];
+                    }];
+                    if (0 == [submenu numberOfItems]) remove = YES;
+                }
+            }
+
+            if (remove) {
+                [menu removeItem:obj];
+                *stop = YES;
+            }
+        }];
+    }
+    return menu;
+}
 @end
+
+
+@implementation NSTextView (TextEditAdditions)
+
+/* This method causes the text to be laid out in the foreground (approximately) up to the indicated character index.  Note that since we are adding a category on a system framework, we are prefixing the method with "textEdit" to greatly reduce chance of any naming conflict.
+*/
+- (void)textEditDoForegroundLayoutToCharacterIndex:(NSUInteger)loc {
+    NSUInteger len;
+    if (loc > 0 && (len = [[self textStorage] length]) > 0) {
+        NSRange glyphRange;
+        if (loc >= len) loc = len - 1;
+        /* Find out which glyph index the desired character index corresponds to */
+        glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(loc, 1) actualCharacterRange:NULL];
+        if (glyphRange.location > 0) {
+            /* Now cause layout by asking a question which has to determine where the glyph is */
+            (void)[[self layoutManager] textContainerForGlyphAtIndex:glyphRange.location - 1 effectiveRange:NULL];
+        }
+    }
+}
+
+@end
+
+

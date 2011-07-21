@@ -1,6 +1,6 @@
 /*
     Preferences.m
-    Copyright (c) 1995-2009 by Apple Computer, Inc., all rights reserved.
+    Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
     Author: Ali Ozer
 
     Preferences controller, subclass of NSWindowController. Since the switch to a bindings-based preferences interface, the class has become a lot simpler; its only duties now are to manage the user fonts for rich and plain text documents, translate HTML saving options from backwards-compatible defaults values into pop-up menu item tags, and revert everything to the initial defaults if the user so chooses.
@@ -45,6 +45,7 @@
 #import "EncodingManager.h"
 #import "FontNameTransformer.h"
 #import "TextEditDefaultsKeys.h"
+#import "Controller.h"
 
 @implementation Preferences
 
@@ -56,7 +57,16 @@
     NSWindow *window = [self window];
     [window setHidesOnDeactivate:NO];
     [window setExcludedFromWindowsMenu:YES];
+    [window setIdentifier:@"Preferences"];
+    [window setRestorationClass:[self class]];
 }
+
+/* Reopen the preferences window when the app's persistent state is restored. 
+*/
++ (void)restoreWindowWithIdentifier:(NSString *)identifier state:(NSCoder *)state completionHandler:(void (^)(NSWindow *, NSError *))completionHandler {
+    completionHandler([[(Controller *)[NSApp delegate] preferencesController] window], NULL);
+}
+
 
 #pragma mark *** Font changing code ***
 

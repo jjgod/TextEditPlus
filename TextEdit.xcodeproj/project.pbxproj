@@ -7,15 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0791640010423EBF009F6E18 /* chardetect.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079163FF10423EBF009F6E18 /* chardetect.a */; };
-		07ABE04E1041D06E00920FB5 /* chardetect.h in Headers */ = {isa = PBXBuildFile; fileRef = 07ABE04D1041D06E00920FB5 /* chardetect.h */; };
-		07E0CB41104C0B3700E57722 /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07E0CB3F104C0B3700E57722 /* JJTypesetter.h */; };
-		07E0CB42104C0B3700E57722 /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E0CB40104C0B3700E57722 /* JJTypesetter.m */; };
+		07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83A13D8C5A9004E932B /* JJTypesetter.h */; };
+		07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C9E83B13D8C5A9004E932B /* JJTypesetter.m */; };
+		07C9E83F13D8C5B3004E932B /* chardetect.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83E13D8C5B3004E932B /* chardetect.h */; };
+		07C9E84113D8C5BB004E932B /* chardetect.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07C9E84013D8C5BB004E932B /* chardetect.a */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
 		176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 176A30470E23EB0600857A3B /* FontNameTransformer.m */; };
 		176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */; };
 		41097A6808F6EE81001E6639 /* TextEditErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 41097A6708F6EE81001E6639 /* TextEditErrors.h */; };
 		411131DA0D4FA70D00AF3A0E /* TextEditMisc.h in Headers */ = {isa = PBXBuildFile; fileRef = 411131D90D4FA70D00AF3A0E /* TextEditMisc.h */; };
+		4116BCFE1317428900C7C8C1 /* PrintingTextView.h in Headers */ = {isa = PBXBuildFile; fileRef = 4116BCFC1317428900C7C8C1 /* PrintingTextView.h */; };
+		4116BCFF1317428900C7C8C1 /* PrintingTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4116BCFD1317428900C7C8C1 /* PrintingTextView.m */; };
 		412CFBD50B62AC8A00A46D76 /* LinePanelController.h in Headers */ = {isa = PBXBuildFile; fileRef = 412CFBD30B62AC8A00A46D76 /* LinePanelController.h */; };
 		412CFBD60B62AC8A00A46D76 /* LinePanelController.m in Sources */ = {isa = PBXBuildFile; fileRef = 412CFBD40B62AC8A00A46D76 /* LinePanelController.m */; };
 		413912160BD54AB700760A3D /* DocumentPropertiesPanelController.h in Headers */ = {isa = PBXBuildFile; fileRef = 413912140BD54AB700760A3D /* DocumentPropertiesPanelController.h */; };
@@ -69,15 +71,17 @@
 		0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		0230D2BFFF2F85EF11CA0C5D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		079163FF10423EBF009F6E18 /* chardetect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = chardetect.a; sourceTree = "<group>"; };
-		07ABE04D1041D06E00920FB5 /* chardetect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chardetect.h; sourceTree = "<group>"; };
-		07E0CB3F104C0B3700E57722 /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
-		07E0CB40104C0B3700E57722 /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
+		07C9E83A13D8C5A9004E932B /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
+		07C9E83B13D8C5A9004E932B /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
+		07C9E83E13D8C5B3004E932B /* chardetect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chardetect.h; sourceTree = "<group>"; };
+		07C9E84013D8C5BB004E932B /* chardetect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = chardetect.a; sourceTree = "<group>"; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
 		176A30470E23EB0600857A3B /* FontNameTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FontNameTransformer.m; sourceTree = "<group>"; };
 		176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditDefaultsKeys.h; sourceTree = "<group>"; };
 		41097A6708F6EE81001E6639 /* TextEditErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditErrors.h; sourceTree = "<group>"; };
 		411131D90D4FA70D00AF3A0E /* TextEditMisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditMisc.h; sourceTree = "<group>"; };
+		4116BCFC1317428900C7C8C1 /* PrintingTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrintingTextView.h; sourceTree = "<group>"; };
+		4116BCFD1317428900C7C8C1 /* PrintingTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrintingTextView.m; sourceTree = "<group>"; };
 		41249AD603895A6700F1DAE5 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
 		41278ABF06AF663000B5D78D /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/DocumentProperties.nib; sourceTree = "<group>"; };
 		412CFBD30B62AC8A00A46D76 /* LinePanelController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinePanelController.h; sourceTree = "<group>"; };
@@ -134,7 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */,
-				0791640010423EBF009F6E18 /* chardetect.a in Frameworks */,
+				07C9E84113D8C5BB004E932B /* chardetect.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,9 +165,9 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
-				07E0CB3F104C0B3700E57722 /* JJTypesetter.h */,
-				07E0CB40104C0B3700E57722 /* JJTypesetter.m */,
-				07ABE04D1041D06E00920FB5 /* chardetect.h */,
+				07C9E83E13D8C5B3004E932B /* chardetect.h */,
+				07C9E83A13D8C5A9004E932B /* JJTypesetter.h */,
+				07C9E83B13D8C5A9004E932B /* JJTypesetter.m */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
 				6FE20903FE93D5F211CA2CEA /* Document.h */,
 				6FE208FBFE93D5F211CA2CEA /* Document.m */,
@@ -177,8 +181,6 @@
 				412CFBD40B62AC8A00A46D76 /* LinePanelController.m */,
 				413912140BD54AB700760A3D /* DocumentPropertiesPanelController.h */,
 				413912150BD54AB700760A3D /* DocumentPropertiesPanelController.m */,
-				41FA79380B95E61A00FA84AA /* PrintPanelAccessoryController.h */,
-				41FA79390B95E61A00FA84AA /* PrintPanelAccessoryController.m */,
 				6FE20907FE93D5F211CA2CEA /* ScalingScrollView.h */,
 				6FE208FEFE93D5F211CA2CEA /* ScalingScrollView.m */,
 				6FE20905FE93D5F211CA2CEA /* MultiplePageView.h */,
@@ -189,6 +191,10 @@
 				176A30470E23EB0600857A3B /* FontNameTransformer.m */,
 				92A68B0A02972957007F9DE6 /* EncodingManager.h */,
 				92A68B0B02972957007F9DE6 /* EncodingManager.m */,
+				41FA79380B95E61A00FA84AA /* PrintPanelAccessoryController.h */,
+				41FA79390B95E61A00FA84AA /* PrintPanelAccessoryController.m */,
+				4116BCFC1317428900C7C8C1 /* PrintingTextView.h */,
+				4116BCFD1317428900C7C8C1 /* PrintingTextView.m */,
 				176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */,
 				41097A6708F6EE81001E6639 /* TextEditErrors.h */,
 				411131D90D4FA70D00AF3A0E /* TextEditMisc.h */,
@@ -258,7 +264,7 @@
 		6FE20939FE93D5F211CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				079163FF10423EBF009F6E18 /* chardetect.a */,
+				07C9E84013D8C5BB004E932B /* chardetect.a */,
 				0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */,
 				0230D2BEFF2F85A411CA0C5D /* References (Non-linked frameworks) */,
 			);
@@ -287,8 +293,9 @@
 				411131DA0D4FA70D00AF3A0E /* TextEditMisc.h in Headers */,
 				176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */,
 				176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */,
-				07ABE04E1041D06E00920FB5 /* chardetect.h in Headers */,
-				07E0CB41104C0B3700E57722 /* JJTypesetter.h in Headers */,
+				4116BCFE1317428900C7C8C1 /* PrintingTextView.h in Headers */,
+				07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */,
+				07C9E83F13D8C5B3004E932B /* chardetect.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,9 +328,19 @@
 /* Begin PBXProject section */
 		6FE208F8FE93D5F211CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0410;
+			};
 			buildConfigurationList = 41534B9208A2B299002069FE /* Build configuration list for PBXProject "TextEdit" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 6FE208F9FE93D5F211CA2CEA /* TextEdit */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -383,7 +400,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
-			shellScript = "# This shell-script build phase happens only when installing and causes the \n# project sources (which are shipped as an example) to be installed along \n# with the application.\n\nEXAMPLESDIR=${SYSTEM_DEVELOPER_DIR}/Examples\n\n# install the source\nxcodebuild installsrc \"SYMROOT=${SYMROOT}\" \"OBJROOT=${OBJROOT}\" \"DSTROOT=${DSTROOT}\" \"SRCROOT=${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}\"\n\n# fix up some stuff\nsed '/APPLE INTERNAL SELF TEST/q' ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m | grep -v \"APPLE INTERNAL SELF TEST\" > ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m~\nmv ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m~ ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m\n\n# strip out garbage\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*~\" -exec rm -rf {} \\; -prune ; \nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*~.*\" -exec rm -rf {} \\; -prune ; \nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -type d -name \"CVS\" -exec rm -rf {} \\; -prune ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*.pbxuser\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*.perspective*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*.mode[1234567890]\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".nfs*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".gdb*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".#*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".DS_Store\" -exec rm -rf {} \\; ;\nfind ${DSTROOT} -name \"._*\" -exec rm -rf {} \\; ;\nrm -rf ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/build\n\n# set permissions\t\nchmod -R u+rwX,go+rX,go-w ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}\nchown -R ${INSTALL_OWNER}:${INSTALL_GROUP} ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}\n";
+			shellScript = "# This shell-script build phase happens only when installing and causes the \n# project sources (which are shipped as an example) to be installed along \n# with the application.\n\nEXAMPLESDIR=${SYSTEM_DEVELOPER_DIR}/Examples\n\n# install the source\nxcodebuild installsrc \"SYMROOT=${SYMROOT}\" \"OBJROOT=${OBJROOT}\" \"DSTROOT=${DSTROOT}\" \"SRCROOT=${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}\"\n\n# fix up some stuff\nsed '/APPLE INTERNAL SELF TEST/q' ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m | grep -v \"APPLE INTERNAL SELF TEST\" > ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m~\nmv ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m~ ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/Controller.m\n\n# strip out garbage\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*~\" -exec rm -rf {} \\; -prune ; \nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*~.*\" -exec rm -rf {} \\; -prune ; \nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -type d -name \"CVS\" -exec rm -rf {} \\; -prune ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*.pbxuser\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*.perspective*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"xcuserdata\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \"*.mode[1234567890]\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".nfs*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".gdb*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".#*\" -exec rm -rf {} \\; ;\nfind ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME} -name \".DS_Store\" -exec rm -rf {} \\; ;\nfind ${DSTROOT} -name \"._*\" -exec rm -rf {} \\; ;\nrm -rf ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}/build\n\n# set permissions\t\nchmod -R u+rwX,go+rX,go-w ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}\nchown -R ${INSTALL_OWNER}:${INSTALL_GROUP} ${DSTROOT}${EXAMPLESDIR}/${PRODUCT_NAME}\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -405,7 +422,8 @@
 				41FA793B0B95E61A00FA84AA /* PrintPanelAccessoryController.m in Sources */,
 				413912170BD54AB800760A3D /* DocumentPropertiesPanelController.m in Sources */,
 				176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */,
-				07E0CB42104C0B3700E57722 /* JJTypesetter.m in Sources */,
+				4116BCFF1317428900C7C8C1 /* PrintingTextView.m in Sources */,
+				07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,13 +540,13 @@
 		41534B8F08A2B299002069FE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
 				BUILD_PHASING = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 264;
+				CURRENT_PROJECT_VERSION = 284;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_ENABLE_OBJC_GC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -569,12 +587,13 @@
 		41534B9008A2B299002069FE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				BUILD_PHASING = YES;
 				COPY_PHASE_STRIP = YES;
-				CURRENT_PROJECT_VERSION = 264;
+				CURRENT_PROJECT_VERSION = 284;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_ENABLE_OBJC_GC = NO;
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Libraries/CIncludes\"";
 				INFOPLIST_FILE = "Info-TextEdit.plist";
@@ -599,6 +618,7 @@
 					"-e",
 					start,
 				);
+				VALID_ARCHS = "armv6 armv7 i386 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -613,22 +633,14 @@
 		41534B9308A2B299002069FE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
-				GCC_VERSION = "";
 				MACOSX_DEPLOYMENT_TARGET = "";
-				OTHER_LDFLAGS = "";
 			};
 			name = Debug;
 		};
 		41534B9408A2B299002069FE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
-				GCC_VERSION = "";
 				MACOSX_DEPLOYMENT_TARGET = "";
-				OTHER_LDFLAGS = "";
 			};
 			name = Release;
 		};

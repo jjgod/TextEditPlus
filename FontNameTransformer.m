@@ -1,6 +1,6 @@
 /*
     FontNameTransformer.m
-    Copyright (c) 2008-2009 by Apple Computer, Inc., all rights reserved.
+    Copyright (c) 2008-2011 by Apple Computer, Inc., all rights reserved.
     Author: Jordan Rose
     
     Value transformer that turns fonts into a human-readable string with the font's name and size. This is used in the preferences window.

@@ -1,6 +1,6 @@
 /*
         EncodingManager.m
-        Copyright (c) 2002-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 2002-2011 by Apple Computer, Inc., all rights reserved.
         Author: Ali Ozer
         
         Helper class providing additional functionality for character encodings.

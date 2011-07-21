@@ -14,11 +14,12 @@
 
 - (NSUInteger)numberOfPages;
 
-- (void)doForegroundLayoutToCharacterIndex:(NSUInteger)loc;
-
 - (NSView *)documentView;
 
 - (void)breakUndoCoalescing;
+
+/* Layout orientation sections */
+- (NSArray *)layoutOrientationSections;
 
 - (IBAction)chooseAndAttachFiles:(id)sender;
 

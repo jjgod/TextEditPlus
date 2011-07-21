@@ -1,6 +1,6 @@
 /*
         DocumentPropertiesPanelController.m
-        Copyright (c) 2007-2009 by Apple Computer, Inc., all rights reserved.
+        Copyright (c) 2007-2011 by Apple Computer, Inc., all rights reserved.
         Author: Ali Ozer
 
         "Document Properties" panel controller for TextEdit.  There is a little more code here than one would like,
@@ -49,6 +49,7 @@
 #import "Document.h"
 #import "DocumentController.h"
 #import "TextEditMisc.h"
+#import "Controller.h"
 
 @implementation DocumentPropertiesPanelController
 
@@ -100,7 +101,17 @@
     [self activeDocumentChanged];
     [NSApp addObserver:self forKeyPath:@"mainWindow.windowController.document" options:0 context:[DocumentPropertiesPanelController class]];
 
+    NSWindow *window = [self window];
+    [window setIdentifier:@"DocumentProperties"];
+    [window setRestorationClass:[self class]];
+
     [super windowDidLoad];  // It's documented to do nothing, but still a good idea to invoke...
+}
+
+/* Reopen the properties window when the app's persistent state is restored. 
+*/
++ (void)restoreWindowWithIdentifier:(NSString *)identifier state:(NSCoder *)state completionHandler:(void (^)(NSWindow *, NSError *))completionHandler {
+    completionHandler([[(Controller *)[NSApp delegate] propertiesController] window], NULL);
 }
 
 /* Whenever the properties panel loses key status, we want to commit editing.
