@@ -135,7 +135,7 @@
         [layoutMgr setTypesetter:typesetter];
         [[doc textStorage] addLayoutManager:layoutMgr];
         [typesetter release];
-
+	    
 	    if ([self isWindowLoaded]) {
                 [self setHasMultiplePages:[doc hasMultiplePages] force:NO];
                 [self setupInitialTextViewSharedState];
@@ -206,6 +206,7 @@
 	} 
     } else if (object == [scrollView verticalScroller]) {
         if ([keyPath isEqualToString:@"scrollerStyle"]) {
+            [self invalidateRestorableState];
             NSSize size = [[self document] viewSize];
             if (!NSEqualSizes(size, NSZeroSize)) {
                 [self resizeWindowForViewSize:size];
@@ -260,13 +261,13 @@
 
 - (void)printInfoUpdated {
     if (hasMultiplePages) {
-        NSUInteger cnt, numberOfPages = [self numberOfPages];
+        NSUInteger cnt;
         MultiplePageView *pagesView = [scrollView documentView];
         NSArray *textContainers = [[self layoutManager] textContainers];
 	
         [pagesView setPrintInfo:[[self document] printInfo]];
-        
-        for (cnt = 0; cnt < numberOfPages; cnt++) {
+
+        for (cnt = 0; cnt < [self numberOfPages]; cnt++) {      // Call -numberOfPages repeatedly since it may change
             NSRect textFrame = [pagesView documentRectForPageNumber:cnt];
             NSTextContainer *textContainer = [textContainers objectAtIndex:cnt];
             [textContainer setContainerSize:textFrame.size];
@@ -600,6 +601,28 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     [[scrollView window] setInitialFirstResponder:[self firstTextView]];	// So focus won't be stolen (2934918)
 }
 
+/* We override these pair of methods so we can stash away the scrollerStyle, since we want to preserve the size of the document (rather than the size of the window).
+ */
+- (void)restoreStateWithCoder:(NSCoder *)coder {
+    [super restoreStateWithCoder:coder];
+    if ([coder containsValueForKey:@"scrollerStyle"]) {
+        NSScrollerStyle previousScrollerStyle = [coder decodeIntegerForKey:@"scrollerStyle"];
+        if (previousScrollerStyle != [NSScroller preferredScrollerStyle] && ! [[self document] hasMultiplePages]) {
+            // When we encoded the frame, the window was sized for this saved style. The preferred scroller style has since changed. Given our current frame and the style it had applied, compute how big the view must have been, and then resize ourselves to make the view that size.
+            NSSize scrollViewSize = [scrollView frame].size;
+            NSSize previousViewSize = [[scrollView class] contentSizeForFrameSize:scrollViewSize horizontalScrollerClass:[scrollView hasHorizontalScroller] ? [NSScroller class] : Nil verticalScrollerClass:[scrollView hasVerticalScroller] ? [NSScroller class] : Nil borderType:[scrollView borderType] controlSize:NSRegularControlSize scrollerStyle:previousScrollerStyle];
+            previousViewSize.width -= (defaultTextPadding() * 2.0);
+            [self resizeWindowForViewSize:previousViewSize];
+        }
+    }
+}
+
+- (void)encodeRestorableStateWithCoder:(NSCoder *)coder {
+    [super encodeRestorableStateWithCoder:coder];
+    // Normally you would just encode things that changed; however, since the only invalidation we do is for scrollerStyle, this approach is fine for now.
+    [coder encodeInteger:[NSScroller preferredScrollerStyle] forKey:@"scrollerStyle"];
+}
+
 - (void)resizeWindowForViewSize:(NSSize)size {
     NSWindow *window = [self window];
     NSRect origWindowFrame = [window frame];
@@ -666,25 +689,6 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     if (edited) [[self document] setOriginalOrientationSections:nil];
 }
 
-/* doToggleRich, called from toggleRich: or the endToggleRichSheet:... alert panel method, toggles the isRichText state (with undo)
-*/
-- (void)doToggleRichWithNewURL:(NSURL *)newURL {
-    Document *doc = [self document];
-    BOOL rich = [doc isRichText], newRich = !rich;
-    NSUndoManager *undoMgr = [doc undoManager];
-    
-    [undoMgr registerUndoWithTarget:doc selector:@selector(setFileType:) object:[doc fileType]];
-    [undoMgr registerUndoWithTarget:self selector:@selector(doToggleRichWithNewURL:) object:[doc fileURL]];
-    
-    [doc setRichText:newRich];
-    [doc setFileURL:newURL];
-    [self convertTextForRichTextStateRemoveAttachments:rich];
-    
-    if (![undoMgr isUndoing]) {
-	[undoMgr setActionName:newRich ? NSLocalizedString(@"Make Rich Text", @"Undo menu item text (without 'Undo ') for making a document rich text") : NSLocalizedString(@"Make Plain Text", @"Undo menu item text (without 'Undo ') for making a document plain text")];
-    }
-}
-
 /* Layout orientation sections */
 - (NSArray *)layoutOrientationSections {
     NSArray *textContainers = [layoutMgr textContainers];
@@ -727,13 +731,28 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
     return sections;
 }
 
-/* toggleRich: puts up an alert before ultimately calling -doToggleRichWithNewURL:
+- (void)setRichText:(BOOL)richText {
+    Document *doc = [self document];
+    NSUndoManager *undoMgr = [doc undoManager];
+    [[undoMgr prepareWithInvocationTarget:self] setRichText:!richText];
+    
+    [doc setRichText:richText];
+    [self convertTextForRichTextStateRemoveAttachments:!richText];
+    
+    if ([undoMgr isUndoing]) {
+        [undoMgr setActionName:@""];
+    } else {
+        [undoMgr setActionName:richText ? NSLocalizedString(@"Make Rich Text", @"Undo menu item text (without 'Undo ') for making a document rich text") : NSLocalizedString(@"Make Plain Text", @"Undo menu item text (without 'Undo ') for making a document plain text")];
+    }
+}
+
+/* toggleRich: puts up an alert before ultimately calling -setRichText:
 */
 - (void)toggleRich:(id)sender {
     // Check if there is any loss of information
     if ([[self document] toggleRichWillLoseInformation]) {
         NSBeginAlertSheet(NSLocalizedString(@"Convert this document to plain text?", @"Title of alert confirming Make Plain Text"),
-			  NSLocalizedString(@"OK", @"OK"), NSLocalizedString(@"Cancel", @"Button choice allowing user to cancel."), nil, [[self document] windowForSheet], 
+			  NSLocalizedString(@"OK", @"OK"), NSLocalizedString(@"Cancel", @"Button choice that allows the user to cancel."), nil, [[self document] windowForSheet], 
 			  self, NULL, @selector(didEndToggleRichSheet:returnCode:contextInfo:), NULL,
 			  NSLocalizedString(@"Making a rich text document plain will lose all text styles (such as fonts and colors), images, attachments, and document properties.", @"Subtitle of alert confirming Make Plain Text"));
     } else {
@@ -750,15 +769,15 @@ attachmentFlag allows for optimizing some cases where we know we have no attachm
 - (void)doToggleRichAfterSaving {
     Document *document = [self document];
     if ([document fileURL] && [document isDocumentEdited]) {
-	[document autosaveDocumentWithDelegate:self didAutosaveSelector:@selector(document:didAutosave:contextInfo:) contextInfo:NULL];
+        [document autosaveDocumentWithDelegate:self didAutosaveSelector:@selector(document:didAutosave:contextInfo:) contextInfo:NULL];
     } else {
-	[self doToggleRichWithNewURL:nil];
+        [self setRichText:![[self document] isRichText]];
     }
 }
 
 - (void)document:(Document *)document didAutosave:(BOOL)saved contextInfo:(void *)contextInfo {
     // If the save was unsuccessful, then we don't toggle the document format
-    if (saved) [self doToggleRichWithNewURL:nil];
+    if (saved) [self setRichText:![[self document] isRichText]];
 }
 
 /* Layout orientation

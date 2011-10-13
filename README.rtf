@@ -1,12 +1,12 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1114
+{\rtf1\ansi\ansicpg1252\cocoartf1130
 \readonlydoc1{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset0 Courier;\f2\fnil\fcharset0 Monaco;
 }
 {\colortbl;\red255\green255\blue255;\red0\green116\blue0;\red92\green38\blue153;}
-\vieww11000\viewh7900\viewkind0
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\vieww12360\viewh9720\viewkind0
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \f0\b\fs48 \cf0 TextEdit\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 \
 This directory contains the source code for the Objective-C version of TextEdit, which is a simple text editor based on the text system in Cocoa.\
@@ -14,24 +14,28 @@ This directory contains the source code for the Objective-C version of TextEdit,
 Scroll about halfway down this document for an overview of the source files in TextEdit.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 Changes in TextEdit 1.7 (Lion):\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
-\b0\fs24 \cf0 \'95 In 1.7 TextEdit adopts the Saveless Documents and Persistence features. TextEdit overrides the NSDocument class method +autosavesInPlace and returns YES to enable saveless. \
+\b0\fs24 \cf0 \'95 In Mac OS X Lion, TextEdit adopts Auto Save. TextEdit overrides the NSDocument class method +autosavesInPlace and returns YES to enable saveless.  In addition there is a bunch of code to support TextEdit's ability to deal with multiple file types and to transparently transform between them (RTF to RTFD for instance).  Not all applications will need this level of customization.  Note that TextEdit's "File" menu is automatically updated by the AppKit to reflect Auto Save changes, such as the replacement of the "Save As\'85" item with "Duplicate."  This allows the same menu to be used on 10.6 and 10.7 systems.\
 \'95 Support for the AutosaveDelay preference has been removed; along with the UI to set it. (That preference will still control how often SnowLeopard version of TextEdit automatically saves, for backup purposes.)  For 10.7 there is a new AutosavingDelay preference, which is set to 30 by default.  It controls how frequently the new save-in-place saving kicks in. It can be changed only from the command line for demo and experimentation purposes, if needed.\
 \'95 TextEdit enables the new "inspector bar" feature of NSTextView.\
 \'95 TextEdit now enables rewrapping (rather than scaling) of the contents to the page size when printing "wrap-to-window" documents. The setting is controlled in the print panel, and is remembered between invocations of the panel (and across launches).\
 \'95 TextEdit enables the attachment preview via QuickLook.\
 \'95 TextEdit now supports vertical text layout.\
+\'95 TextEdit showcases the new text finder bar, with -[NSTextView setUsesFindBar:YES]. \
+\'95 TextEdit opts into Automatic Termination. However, this opt-in is done automatically by the system. Normally TextEdit would have had to put an entry for NSSupportsAutomaticTermination in its Info.plist or call -[NSProcessInfo setAutomaticTerminationSupportEnabled:YES].\
+\'95 In TextEdit's "Wrap to Window" mode, document layout and wrapping is determined by window width. Because of this, TextEdit reacts to changes in scroller style by changing the size of the window rather than the size of the content.  This explains the code in DocumentWindowController to observe and react to scrollerStyle, as well as the code to persist and restore this setting as a part of state restoration.\
+\'95 TextEdit is sandboxed in Lion.\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
-\b\fs28 \cf0 \
-Changes in TextEdit 1.6 (SnowLeopard):\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\b\fs28 \cf0 Changes in TextEdit 1.6 (SnowLeopard):\
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \
 \'95 As with most system apps, TextEdit is now 64-bit by default.\
@@ -45,7 +49,7 @@ Changes in TextEdit 1.6 (SnowLeopard):\
 \'95 TextEdit now has menu items and preferences for controlling spelling and grammar checking and correction, data detectors, as well as text substitution and transformation features. \'a0Text substitution and automatic spelling correction are enabled by default. The list of substitutions can be controlled via the new "Language & Text" pane in System Preferences.\
 \'95 TextEdit now has "Save As PDF..." menu item. It allows generating PDF for the current document without going through the print panel. Note that this functionality can easily be achieved in an NSDocument-based app on SnowLeopard by simply omitting the value of the NSPrintSavePath key (and the new NSPrintJobSavingURL key). TextEdit does this. On Leopard, some lines of code are needed; here is what TextEdit had to do before it switched simply omitting NSPrintSavePath from the -[NSDocument printDocumentWithSettings:showPrintPanel:delegate:didPrintSelector:contextInfo:] call:\
 \
-\pard\tx1120\pardeftab1120\li2440\fi-2440\ql\qnatural\pardirnatural
+\pard\tx1120\pardeftab1120\li2440\fi-2440\pardirnatural
 
 \f1 \cf0 \CocoaLigature0     NSSavePanel *savePanel = [NSSavePanel savePanel];\
 \cf2     // Come up with a default name for the saved PDF\
@@ -61,15 +65,15 @@ Changes in TextEdit 1.6 (SnowLeopard):\
 \cf0 	    if ([savePanel isExtensionHidden]) [[NSFileManager defaultManager] setAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], NSFileExtensionHidden, nil] ofItemAtPath:[savePanel filename] error:NULL];\
 	\}\
     \}];\
-\pard\tx1120\li2440\fi-2440\ql\qnatural
+\pard\tx1120\li2440\fi-2440
 
 \f0 \cf0 \CocoaLigature1 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 \
 Changes in TextEdit 1.5 (Leopard):\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \'95 TextEdit is now NSDocument-based and thus provides many features provided or enabled by NSDocument, such as correct file tracking. \
 \'95 Due to the NSDocument changes, some open/save options have been removed from TextEdit's preference panel.\
@@ -82,12 +86,12 @@ Changes in TextEdit 1.5 (Leopard):\
 \'95 TextEdit has a subclass of NSViewController to manage a print panel accessory that enables changing printing of headers and footers.  The "Number pages when printing" option has been removed from the preference panel.\
 \'95 Another NSWindowController subclass, DocumentPropertiesPanelController, manages the properties panel. This class shows how to implement an inspector-style panel using bindings, and provide reasonable edit-commiting behaviors (for instance, when the panel is dismissed, when document windows are saved or deactivated, etc). With the introduction of this class, some messy code in the Document class to manage undos in the presence of "continuously updating" text fields have been removed.\
 \'95 As always, TextEdit highlights some of the other new features in the Cocoa text system, such as ability to do smart quotes or links.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 \
 Changes in TextEdit 1.4 (Tiger):\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \'95 TextEdit now uses new NSError and NSAlert facilities to put up better error messages on failed file system operations.\
 \'95 TextEdit now has a preference to enable the use of the new Cocoa feature to auto-number printed pages. Although the feature enables sophisticated customization of the headers and footers by the application, TextEdit just uses the default format.\
@@ -108,11 +112,11 @@ Changes in TextEdit 1.4 (Tiger):\
 \'95 TextEdit's AppleScript command handling for "save" has been improved and made safer.\
 \'95 TextEdit is still not NSDocument-based. It should be.\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 Changes in TextEdit 1.3, Mac OS X 10.3 (Panther):\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \'95 TextEdit now uses NSTextView's new built-in find panel.  The TextFinder class was removed and the find menu items were changed to send the standard performFindPanelAction: method down the responder chain.\
 \'95 Command key for "Find Previous" has been changed to cmd-shift-G.\
@@ -127,10 +131,10 @@ Changes in TextEdit 1.4 (Tiger):\
 \b\fs28 \
 
 \b0\fs24 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 Changes in TextEdit 1.2, Mac OS X 10.2 (Jaguar):\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \
 \'95 Default rulers for new documents now have 12 tab stops 1/2 inch apart (instead of the giant 1 inch tabs).  Rulers are also shown by default for rich text documents. This can be disabled in the preferences panel.\
@@ -139,11 +143,11 @@ Changes in TextEdit 1.4 (Tiger):\
 \'95 File names received via the "Open File" service will now be sanitized further (by deleting all lines but the first and trimming spaces), if the original name doesn't work.\
 \'95 The list of encodings which appear in the various encodings popups (open/save panels, Preferences panel) can be customized. A new class, EncodingManager, implements this behavior and also collects most of the other encoding-related implementation in TextEdit.\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 Changes TextEdit 1.1, Mac OS X 10.1:\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \'95 Added support for saving files with hidden extensions. If TextEdit was an NSDocument based app, this would be automatic; but it's not, so it requires a few lines of code to (1) enable the save panel to show the checkbox to allow user to set state of hidden extension, and (2) pay attention to the flag and save it with  the document. In addition, TextEdit uses the displayNameAtPath: method in NSFileManager to display document names properly (in the few places it does).\
 \'95 Thanks to changes in Cocoa, TextEdit's recent documents menu will now correctly track documents whose volumes or enclosing folders have been renamed. Note that TextEdit itself does not yet track open documents whose volumes or folders have been renamed. This is automatic in NSDocument, but TextEdit isn't NSDocument based.\
@@ -155,12 +159,12 @@ Changes in TextEdit 1.4 (Tiger):\
 \'95 Changed app signature of TextEdit to 'ttxt', which matches that of SimpleText, so that old documents will open in TextEdit and not launch SimpleText in Classic. However, because screen grabs from Mac OS 9 have SimpleText's creator, also added code to recognize these files and pass them off to the user's default image viewer. \
 \'95 Fixed a bug in TextFinder.m where "replace all" could fail and raise if the search string occured multiple overlapping times in a selection; for instance, "aa" being replaced in the word "craaash".\
 \'95 Preferences object would always write the preferences out on quit, without checking to see if they actually changed. It now does a check.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 \
 Changes in TextEdit 1.0, Mac OS 10.0:\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \'95 Now using the third possible return value (NSTerminateLater) into applicationShouldTerminate: delegation message to indicate to NSApplication that user is still deciding.\
 \'95 Got rid of showInfoPanel:; all it did was to allow adding "c" (for Objective-C, as opposed to Java) to the version number. Now we just use the standard about panel support and don't add the letter.\
@@ -174,22 +178,22 @@ Changes in TextEdit 1.0, Mac OS 10.0:\
 \'95 TextEdit now appends "txt" to plain text documents, a feature which can be turned off in the Preferences panel. Also, if the user enters an extension, TextEdit uses a new NSSavePanel delegation method to catch this and give the user a chance to decide whether to append the "txt" extension or not.\
 \'95 Note that being the delegate of the save panel (which occurs only in plain text mode) has created an issue: When the save panel is up, the document still ends up being in the responder chain, causing menu items such as "Save" to get validated and thus enabled. We fix this by setting a "runningSheet" instance variable, and looking at that in Document's validateMenuItem:. However, some menu items are still inappropriately enabled, such as "Make Rich Text." We will be looking into a general fix for this issue.\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 Changes in Mac OS X Public Beta: \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \'95 TextEdit now links against Cocoa.framework, instead of AppKit and AppKitScripting separately.\
 \'95 Default place to save documents is the user's Documents folder.\
 \'95 TextEdit no longer sets a miniwindow icon. With the miniaturization in the dock, most applications can get away without miniwindow images.\
 \'95 The Info.plist now includes a more complete set of types and extensions, allowing TextEdit to see more document types (including untyped files).\
 \'95 TextEdit uses the CFAppleHelpAnchor key in its Info.plist to declare the section of the Apple help book to be consulted when "help" is used. This is an Apple-internal key, and should not be used by third-party applications.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b\fs28 \cf0 \
 Changes in Mac OS X Developer Preview 4:\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
 
 \b0\fs24 \cf0 \
 \'95 TextEdit is now a new Project Builder project.\
@@ -200,21 +204,21 @@ Changes in Mac OS X Developer Preview 4:\
 \'95 On save, TextEdit will now put up a warning panel if it can't save a file in the original format (for instance, RTF files which have been promoted to RTFD, or formats which are read-only, such as HTML or SimpleText).\
 \'95 The printInfo in Document.m is now created lazily, when first accessed.\
 \'95 TextEdit uses the new document modal (sheet) APIs to bring up document modal panels. These APIs allow each window to have a "doc modal" panel of its own up, but achieve non-modality of the app by working through callbacks. Because TextEdit is not NSDocument-based, it implements a lot of the logic for putting up the panels itself. The intent is to move a lot of this code into the AppKit at some point in the near future.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 \cf0 \
 \
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs36 \cf0 Major source files and what's interesting about them:\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 Document.m\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 \
 Subclass of NSDocument.  One instance of this is created for every document (new or saved) in TextEdit.  \
@@ -263,11 +267,11 @@ In the printInfo for the document, TextEdit sets horizontal pagination to NSFitP
 As you will note, there is a good deal of code to deal with encoding of the characters in the document when the document contains plain text. The instance variable documentEncoding stores the encoding of the document; this is either deduced from the file or specified by the user when the document is opened. Keeping this encoding around allows the document to be saved with the same encoding as it was read. (When in memory the character encoding of the document is somewhat meaningless, because the characters in the document are stored in an NSString, whose backing stores are always expressed in terms of Unicode characters. The encoding determines how to save the document when saved as plain text.)\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 DocumentWindowController.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 Subclass of NSWindowController for managing the Document class's interaction with its document window and views.\
 \
@@ -283,7 +287,7 @@ It observes the backgroundColor of the text view and scaleFactor of the scrollVi
 \
 DocumentWindowController binds its layout manager's hyphenationFactor to document.hyphenationFactor,  and text view's editable to document.readOnly (through a negating value transformer). These allow reflecting changes from these in UI without any intermediate glue code.\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \f1 \cf0 setHasMultiplePages:
 \f0  determines whether the document is in wrap-to-page mode or not; study this method, 
@@ -291,10 +295,10 @@ DocumentWindowController binds its layout manager's hyphenationFactor to documen
 \f0 , and 
 \f1 removePage
 \f0  to see how to create and manipulate NSTextViews programmatically.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 The method 
 \f1 textEditDoForegroundLayoutToCharacterIndex:
@@ -302,7 +306,7 @@ DocumentWindowController binds its layout manager's hyphenationFactor to documen
 \
 This class implements a number of NSTextView, NSLayoutManager, and NSWindow delegate methods.  \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \f1 \cf0 textView:clickedOnLink:atIndex:
 \f0  is overridden to allow opening links that represent text files directly in TextEdit, revealing other files in Finder, and opening non-local file URLs in the user's browser.  
@@ -324,11 +328,11 @@ This class implements a number of NSTextView, NSLayoutManager, and NSWindow dele
 This class takes care of setting the document as non-transient after moving or resizing the window.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 DocumentController.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 Subclass of NSDocumentController. Most NSDocument-based applications don't need to subclass NSDocumentController. TextEdit does this to provide "transient document" behavior, as well as customizing the open panel.\
 \
@@ -344,44 +348,44 @@ The open panel customizations include an accessory view which lets the user choo
 \f1 lastSelectedIgnoreRich
 \f0 .\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 \
 MultiplePageView.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 In wrap-to-page mode there is one NSTextView per page. MultiplePageView is the top level view which groups all of these views.  It is inserted as the document view of the scroll view in the document window. MultiplePageView is fairly simple, providing support for conversions between page numbers and rects, and drawing the background for the pages.\
 \
 A possible enhancement to this class would be to have it allow the user to manipulate the page margins by dragging guides around. An advanced exercise would be to add custom markers to the ruler to allow changing the page margins via the ruler as well.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 ScalingScrollView.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 Contains ScalingScrollView, a subclass of NSView to implement a scroll view with a popup to allow setting the zoom factor. This class is fairly generic and can easily be used in a variety of cases.  The scaleFactor property can be observed.\
 \
 In TextEdit, this class is always in use in every document window. However, in wrap-to-window mode, the horizontal scroller and the scale popup are disabled, and the scale is set to 100%.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 Preferences.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 An NSWindowController subclass that controls the preferences window. Since the switch to a bindings-based preferences window, this class has become greatly simplified. However, some preferences, such as HTML saving options and font settings, require special action and are still handled here.\
 \
 The preferences controller also makes sure that the window size settings are valid; if the user enters an invalid dimension, the field is reset to its previous value.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 Controller.m\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 \
 This file contains the central controller object for TextEdit.  With TextEdit's move to NSDocument, and creation of several other controllers, this class has shed some weight in Leopard and has fewer responsibilities.\
@@ -401,11 +405,11 @@ Since
 \f0 may be given arbitrary text as file names, it does some clean-up and extra checks. For instance, it trims whitespace and does "~" expansion (where "~" is used as a shortcut to mean "home folder"). \
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 EncodingManager.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 This file provides the class EncodingManager, which does most of the sophisticed text encoding related stuff.  This class also manages a panel which lets the user customize the list of encodings available in the application.\
 \
@@ -414,11 +418,11 @@ In addition, EncodingManager provides the ability to load the accessory view use
 The EncodingPopUpButtonCell class implements a popup which lets the user choose from a list of encodings. The list can be customized via an entry in the popup which brings up a customization panel.  The class's instances assure that they are updated (via notifications) after any change in the customization panel.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 LinePanelController.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 Manages the "Select Line" panel. Subclass of NSWindowController. Uses NSScanner to parse user input.  \
 \
@@ -427,11 +431,11 @@ The beefiest code in this class is
 \f0 , which figures out the range of characters to be selected based on user's input. Note that this input can be an absolute line (1..number of lines), an absolute range (two line numbers separated by a dash), or a relative line or range (number prefixed by plus or minus).\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 DocumentPropertiesPanelController.m\
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 Manages the \'93Document Properties\'94 panel. Yet another subclass of NSWindowController.\
 \
@@ -468,10 +472,10 @@ This class is mostly reusable; just the name of the class, the nib,
 \f0  need changing. It can be made into an semi-abstract NSWindowController for inspectors by removing these pieces into a subclass.\
 \
 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b\fs28 \cf0 PrintPanelAccessoryController.m\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 \
 A subclass of  the new NSViewController class. Used for adding an accessory view to the print panel. In the case of TextEdit, the accessory view contains just a checkbox, controlling whether or not to include headers and footers on printouts.\
@@ -487,7 +491,7 @@ An override of
 \f0  provides the info to be displayed in the print panel's "Summary" pane.\
 \
 These two methods above are part of the NSPrintPanelAccessorizing protocol.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\ql\qnatural
+\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \f2\fs20 \cf3 \CocoaLigature0 \
 }

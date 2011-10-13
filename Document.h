@@ -2,9 +2,8 @@
 
 @interface Document : NSDocument {
     // Book-keeping
-    BOOL uniqueZone;			/* YES if the zone was created specially for this document */
     BOOL setUpPrintInfoDefaults;	/* YES the first time -printInfo is called */
-    
+    BOOL inDuplicate;
     // Document data
     NSTextStorage *textStorage;		/* The (styled) text content of the document */
     CGFloat scaleFactor;		/* The scale factor retreived from file */
@@ -29,14 +28,18 @@
     BOOL convertedDocument;		/* Converted (or filtered) from some other format (and hence not writable) */
     BOOL lossyDocument;			/* Loaded lossily, so might not be a good idea to overwrite */
     BOOL transient;			/* Untitled document automatically opened and never modified */
-    NSURL *defaultDestination;		/* A hint as to where save dialog should default, used if -fileURL is nil */
     NSArray *originalOrientationSections; /* An array of dictionaries. Each describing the text layout orientation for a page */
-
+    
     // Temporary information about how to save the document
     NSStringEncoding documentEncodingForSaving;	    /* NSStringEncoding for saving the document */
+    NSSaveOperationType currentSaveOperation;          /* So we can know whether to use documentEncodingForSaving or documentEncoding
+                                                        in -fileWrapperOfType:error: */
+    NSLock *saveOperationTypeLock;                  /* so we can atomically set the save operation type and do the save */
+    
     
     // Temporary information about document's desired file type
     NSString *fileTypeToSet;		/* Actual file type determined during a read, and set after the read (which includes revert) is complete. */ 
+
 }
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName encoding:(NSStringEncoding)encoding ignoreRTF:(BOOL)ignoreRTF ignoreHTML:(BOOL)ignoreHTML error:(NSError **)outError;

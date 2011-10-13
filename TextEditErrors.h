@@ -5,7 +5,7 @@
 enum {
     TextEditSaveErrorConvertedDocument = 1,
     TextEditSaveErrorLossyDocument = 2,
-    TextEditSaveErrorRTFDRequired = 3, 
+    TextEditSaveErrorWritableTypeRequired = 3, 
     TextEditSaveErrorEncodingInapplicable = 4,
     TextEditOpenDocumentWithSelectionServiceFailed = 100,
     TextEditInvalidLineSpecification = 200,

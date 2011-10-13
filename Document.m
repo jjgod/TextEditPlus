@@ -49,7 +49,7 @@
 #import "TextEditDefaultsKeys.h"
 #import "TextEditErrors.h"
 #import "TextEditMisc.h"
-
+#import <objc/message.h> // objc_msgSend
 
 #define oldEditPaddingCompensation 12.0
 
@@ -63,7 +63,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 @implementation Document
 
 - (id)init {
-    if (self = [super init]) {
+    if ((self = [super init])) {
         [[self undoManager] disableUndoRegistration];
         
 	textStorage = [[NSTextStorage allocWithZone:[self zone]] init];
@@ -73,15 +73,17 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[self setEncodingForSaving:NoStringEncoding];
 	[self setScaleFactor:1.0];
 	[self setDocumentPropertiesToDefaults];
-	
-	 // Assume the default file type for now, since -initWithType:error: does not currently get called when creating documents using AppleScript. (4165700)
-	[self setFileType:[[NSDocumentController sharedDocumentController] defaultType]];
-	
-        [self setPrintInfo:[self printInfo]];
-        
-	hasMultiplePages = [[NSUserDefaults standardUserDefaults] boolForKey:ShowPageBreaks];
-        
-        [[self undoManager] enableUndoRegistration];
+    inDuplicate = NO;
+    saveOperationTypeLock = [[NSLock alloc] init];
+    
+    // Assume the default file type for now, since -initWithType:error: does not currently get called when creating documents using AppleScript. (4165700)
+    [self setFileType:[[NSDocumentController sharedDocumentController] defaultType]];
+
+    [self setPrintInfo:[self printInfo]];
+
+    hasMultiplePages = [[NSUserDefaults standardUserDefaults] boolForKey:ShowPageBreaks];
+
+    [[self undoManager] enableUndoRegistration];
     }
     return self;
 }
@@ -150,7 +152,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     NSMutableArray *layoutMgrs = [[text layoutManagers] mutableCopy];
     NSEnumerator *layoutMgrEnum = [layoutMgrs objectEnumerator];
     NSLayoutManager *layoutMgr = nil;
-    while (layoutMgr = [layoutMgrEnum nextObject]) [text removeLayoutManager:layoutMgr];
+    while ((layoutMgr = [layoutMgrEnum nextObject])) [text removeLayoutManager:layoutMgr];
     
     // We can do this loop twice, if the document is loaded as rich text although the user requested plain
     BOOL retry;
@@ -166,7 +168,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
         if (!success) {
 	    [text endEditing];
 	    layoutMgrEnum = [layoutMgrs objectEnumerator]; // rewind
-	    while (layoutMgr = [layoutMgrEnum nextObject]) [text addLayoutManager:layoutMgr];   // Add the layout managers back
+	    while ((layoutMgr = [layoutMgrEnum nextObject])) [text addLayoutManager:layoutMgr];   // Add the layout managers back
 	    [layoutMgrs release];
 	    return NO;	// return NO on error; outError has already been set
 	}
@@ -194,13 +196,13 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     } while(retry);
 
     layoutMgrEnum = [layoutMgrs objectEnumerator]; // rewind
-    while (layoutMgr = [layoutMgrEnum nextObject]) [text addLayoutManager:layoutMgr];   // Add the layout managers back
+    while ((layoutMgr = [layoutMgrEnum nextObject])) [text addLayoutManager:layoutMgr];   // Add the layout managers back
     [layoutMgrs release];
     
     val = [docAttrs objectForKey:NSCharacterEncodingDocumentAttribute];
     [self setEncoding:(val ? [val unsignedIntegerValue] : NoStringEncoding)];
     
-    if (val = [docAttrs objectForKey:NSConvertedDocumentAttribute]) {
+    if ((val = [docAttrs objectForKey:NSConvertedDocumentAttribute])) {
         [self setConverted:([val integerValue] > 0)];	// Indicates filtered
         [self setLossy:([val integerValue] < 0)];	// Indicates lossily loaded
     }
@@ -334,100 +336,6 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     return enc;
 }
 
-/* Returns an object that represents the document to be written to file. 
-*/
-- (id)fileWrapperOfType:(NSString *)typeName error:(NSError **)outError {
-    NSTextStorage *text = [self textStorage];
-    NSRange range = NSMakeRange(0, [text length]);
-
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-	[NSValue valueWithSize:[self paperSize]], NSPaperSizeDocumentAttribute, 
-	[NSNumber numberWithInteger:[self isReadOnly] ? 1 : 0], NSReadOnlyDocumentAttribute, 
-	[NSNumber numberWithFloat:[self hyphenationFactor]], NSHyphenationFactorDocumentAttribute, 
-	[NSNumber numberWithDouble:[[self printInfo] leftMargin]], NSLeftMarginDocumentAttribute, 
-	[NSNumber numberWithDouble:[[self printInfo] rightMargin]], NSRightMarginDocumentAttribute, 
-	[NSNumber numberWithDouble:[[self printInfo] bottomMargin]], NSBottomMarginDocumentAttribute, 
-	[NSNumber numberWithDouble:[[self printInfo] topMargin]], NSTopMarginDocumentAttribute, 
-	[NSNumber numberWithInteger:[self hasMultiplePages] ? 1 : 0], NSViewModeDocumentAttribute,
-	nil];
-    NSString *docType = nil;
-    id val = nil; // temporary values
-    
-    NSSize size = [self viewSize];
-    if (!NSEqualSizes(size, NSZeroSize)) {
-	[dict setObject:[NSValue valueWithSize:size] forKey:NSViewSizeDocumentAttribute];
-    }
-    
-    // TextEdit knows how to save all these types, including their super-types. It does not know how to save any of their potential subtypes. Hence, the conformance check is the reverse of the usual pattern.
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    if ([workspace type:(NSString *)kUTTypeRTF conformsToType:typeName]) docType = NSRTFTextDocumentType;
-    else if ([workspace type:(NSString *)kUTTypeRTFD conformsToType:typeName]) docType = NSRTFDTextDocumentType;
-    else if ([workspace type:(NSString *)kUTTypePlainText conformsToType:typeName]) docType = NSPlainTextDocumentType;
-    else if ([workspace type:SimpleTextType conformsToType:typeName]) docType = NSMacSimpleTextDocumentType;
-    else if ([workspace type:Word97Type conformsToType:typeName]) docType = NSDocFormatTextDocumentType;
-    else if ([workspace type:Word2007Type conformsToType:typeName]) docType = NSOfficeOpenXMLTextDocumentType;
-    else if ([workspace type:Word2003XMLType conformsToType:typeName]) docType = NSWordMLTextDocumentType;
-    else if ([workspace type:OpenDocumentTextType conformsToType:typeName]) docType = NSOpenDocumentTextDocumentType;
-    else if ([workspace type:(NSString *)kUTTypeHTML conformsToType:typeName]) docType = NSHTMLTextDocumentType;
-    else if ([workspace type:(NSString *)kUTTypeWebArchive conformsToType:typeName]) docType = NSWebArchiveTextDocumentType;
-    else [NSException raise:NSInvalidArgumentException format:@"%@ is not a recognized document type.", typeName];
-    
-    if (docType) [dict setObject:docType forKey:NSDocumentTypeDocumentAttribute];
-    if ([self hasMultiplePages] && ([self scaleFactor] != 1.0)) [dict setObject:[NSNumber numberWithDouble:[self scaleFactor] * 100.0] forKey:NSViewZoomDocumentAttribute];
-    if (val = [self backgroundColor]) [dict setObject:val forKey:NSBackgroundColorDocumentAttribute];
-    
-    if (docType == NSPlainTextDocumentType) {
-        NSStringEncoding enc = [self encodingForSaving];
-
-	// check here in case this didn't go through save panel (i.e. scripting)
-        if (enc == NoStringEncoding) {
-	    enc = [self encoding];
-	    if (enc == NoStringEncoding) enc = [self suggestedDocumentEncoding];
-	}
-	[dict setObject:[NSNumber numberWithUnsignedInteger:enc] forKey:NSCharacterEncodingDocumentAttribute];
-    } else if (docType == NSHTMLTextDocumentType || docType == NSWebArchiveTextDocumentType) {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        
-	NSMutableArray *excludedElements = [NSMutableArray array];
-	if (![defaults boolForKey:UseXHTMLDocType]) [excludedElements addObject:@"XML"];
-	if (![defaults boolForKey:UseTransitionalDocType]) [excludedElements addObjectsFromArray:[NSArray arrayWithObjects:@"APPLET", @"BASEFONT", @"CENTER", @"DIR", @"FONT", @"ISINDEX", @"MENU", @"S", @"STRIKE", @"U", nil]];
-	if (![defaults boolForKey:UseEmbeddedCSS]) {
-	    [excludedElements addObject:@"STYLE"];
-	    if (![defaults boolForKey:UseInlineCSS]) [excludedElements addObject:@"SPAN"];
-	}
-	if (![defaults boolForKey:PreserveWhitespace]) {
-	    [excludedElements addObject:@"Apple-converted-space"];
-	    [excludedElements addObject:@"Apple-converted-tab"];
-	    [excludedElements addObject:@"Apple-interchange-newline"];
-	}
-	[dict setObject:excludedElements forKey:NSExcludedElementsDocumentAttribute];
-	[dict setObject:[defaults objectForKey:HTMLEncoding] forKey:NSCharacterEncodingDocumentAttribute];
-	[dict setObject:[NSNumber numberWithInteger:2] forKey:NSPrefixSpacesDocumentAttribute];
-    }
-    
-    // Set the text layout orientation for each page
-    if (val = [[[self windowControllers] objectAtIndex:0] layoutOrientationSections]) [dict setObject:val forKey:NSTextLayoutSectionsAttribute];
-
-    // Set the document properties, generically, going through key value coding
-    for (NSString *property in [self knownDocumentProperties]) {
-	id value = [self valueForKey:property];
-	if (value && ![value isEqual:@""] && ![value isEqual:[NSArray array]]) [dict setObject:value forKey:[[self documentPropertyToAttributeNameMappings] objectForKey:property]];
-    }
-    
-    NSFileWrapper *result = nil;
-    if (docType == NSRTFDTextDocumentType || (docType == NSPlainTextDocumentType && ![self isOpenedIgnoringRichText])) {	// We obtain a file wrapper from the text storage for RTFD (to produce a directory), or for true plain-text documents (to write out encoding in extended attributes)
-        result = [text fileWrapperFromRange:range documentAttributes:dict error:outError]; // returns NSFileWrapper
-    } else {
-    	NSData *data = [text dataFromRange:range documentAttributes:dict error:outError]; // returns NSData
-	if (data) {
-	    result = [[[NSFileWrapper alloc] initRegularFileWithContents:data] autorelease];
-	    if (!result && outError) *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileWriteUnknownError userInfo:nil];    // Unlikely, but just in case we should generate an NSError for this case
-        }
-    }
-    
-    return result;
-}
-
 /* Clear the delegates of the text views and window, then release all resources and go away...
 */
 - (void)dealloc {
@@ -442,12 +350,9 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [copyright release];
     
     [fileTypeToSet release];
-    [defaultDestination release];
 
     [originalOrientationSections release];
-
-    if (uniqueZone) NSRecycleZone([self zone]);
-
+    [saveOperationTypeLock release];
     [super dealloc];
 }
 
@@ -686,10 +591,11 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     BOOL multiPage = [self hasMultiplePages];
     
     if ([[self windowControllers] count] == 0) [self makeWindowControllers];
-
+    NSView *documentView = [[[self windowControllers] objectAtIndex:0] documentView];
+    
     id printingView;
     if (multiPage) {    // If already in multiple-page ("wrap-to-page") mode, we simply use the display view for printing
-        printingView = [[[self windowControllers] objectAtIndex:0] documentView];
+        printingView = documentView;
         [[[[self windowControllers] objectAtIndex:0] firstTextView] textEditDoForegroundLayoutToCharacterIndex:NSIntegerMax];		// Make sure the whole document is laid out before printing
     } else {            // Otherwise we create a new text view (along with a text container and layout manager)
         printingView = [[[PrintingTextView alloc] init] autorelease];   // PrintingTextView is a simple subclass of NSTextView. Creating the view this way creates rest of the text system, which it will release when dealloc'ed (since the print panel will be releasing this, we want to hand off the responsibility of release everything)
@@ -706,6 +612,8 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     NSPrintOperation *op = [NSPrintOperation printOperationWithView:printingView printInfo:tempPrintInfo];
     [op setShowsPrintPanel:YES];
     [op setShowsProgressPanel:YES];
+    // Since this printing view may not be embedded in a window, we have to manually set the print job title.
+    [op setJobTitle:[documentView printJobTitle]];
     
     // If we're in wrap-to-page mode, no need to let the user tweak wrap-to-page mode printing
     [accessoryController setShowsWrappingToFit:!multiPage]; 
@@ -751,12 +659,12 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     NSInteger length = [textStorage length];
     NSRange range;
     NSDictionary *attrs;
-    return ( [self isRichText] // Only rich -> plain can lose information.
+    return ( ([self isRichText] // Only rich -> plain can lose information.
 	     && ((length > 0) // If the document contains characters and...
 		 && (attrs = [textStorage attributesAtIndex:0 effectiveRange:&range])  // ...they have attributes...
 		 && ((range.length < length) // ...which either are not the same for the whole document...
 		     || ![[self defaultTextAttributes:YES] isEqual:attrs]) // ...or differ from the default, then...
-		 ) // ...we will lose styling information.
+		 )) // ...we will lose styling information.
 	     || [self hasDocumentProperties]); // We will also lose information if the document has properties.
 }
 
@@ -843,17 +751,7 @@ void validateToggleItem(NSMenuItem *aCell, BOOL useFirst, NSString *first, NSStr
     }
 }
 
-- (IBAction)revertDocumentToSaved:(id)sender {
-    // This is necessary, because document reverting doesn't happen within NSDocument if the fileURL is nil.
-    // However, this is only a temporary workaround because it would be better if fileURL was never set to nil.
-    if( [self fileURL] == nil && defaultDestination != nil ) {
-        [self setFileURL: defaultDestination];
-    }
-    [super revertDocumentToSaved:sender];
-}
-
 - (BOOL)revertToContentsOfURL:(NSURL *)url ofType:(NSString *)type error:(NSError **)outError {
-    // See the comment in the above override of -revertDocumentToSaved:.
     BOOL success = [super revertToContentsOfURL:url ofType:type error:outError];
     if (success) {
         if (fileTypeToSet) {	// If we're reverting, NSDocument will set the file type behind out backs. This enables restoring that type.
@@ -861,15 +759,8 @@ void validateToggleItem(NSMenuItem *aCell, BOOL useFirst, NSString *first, NSStr
             [fileTypeToSet release];
             fileTypeToSet = nil;
         }
-        [defaultDestination release];
-        defaultDestination = nil;
         [self setHasMultiplePages:hasMultiplePages];
         [[self windowControllers] makeObjectsPerformSelector:@selector(setupTextViewForDocument)];
-        [[self undoManager] removeAllActions];
-    } else {
-        // The document failed to revert correctly, or the user decided to cancel the revert.
-        // This just restores the file URL to how it was before the sheet was displayed.
-        [self setFileURL:nil];
     }
     return success;
 }
@@ -909,33 +800,32 @@ CGFloat defaultTextPadding(void) {
 - (void)makeWindowControllers {
     NSArray *myControllers = [self windowControllers];
     
-    /* If this document displaced a transient document, it will already have been assigned a window controller. If that is not the case, create one. */
+    // If this document displaced a transient document, it will already have been assigned a window controller. If that is not the case, create one.
     if ([myControllers count] == 0) {
         [self addWindowController:[[[DocumentWindowController allocWithZone:[self zone]] init] autorelease]];
     }
 }
 
-- (NSArray *)writableTypesForSaveOperation:(NSSaveOperationType)saveOperation {
+/* One of the determinants of whether a file is locked is whether its type is one of our writable types. However, the writable types are a function of whether the document contains attachments. But whether we are locked cannot be a function of whether the document contains attachments, because we won't be asked to redetermine autosaving safety after an undo operation resulting from a cancel, so the document would continue to appear locked if an image were dragged in and then cancel was pressed.  Therefore, we must use an "ignoreTemporary" boolean to treat RTF as temporarily writable despite the attachments.  That's fine since -checkAutosavingSafetyAfterChangeAndReturnError: will perform this check again with ignoreTemporary set to YES, and that method will be called when the operation is done and undone, so no inconsistency results. 
+*/
+- (NSArray *)writableTypesForSaveOperation:(NSSaveOperationType)saveOperation ignoreTemporaryState:(BOOL)ignoreTemporary {
     NSMutableArray *outArray = [[[[self class] writableTypes] mutableCopy] autorelease];
     if (saveOperation == NSSaveAsOperation) {
-	/* Rich-text documents cannot be saved as plain text. */
+	// Rich-text documents cannot be saved as plain text.
 	if ([self isRichText]) {
 	    [outArray removeObject:(NSString *)kUTTypePlainText];
 	}
 	
-	/* Documents that contain attacments can only be saved in formats that support embedded graphics. */
-	if ([textStorage containsAttachments]) {
+	// Documents that contain attacments can only be saved in formats that support embedded graphics.
+	if (!ignoreTemporary && [textStorage containsAttachments]) {
 	    [outArray setArray:[NSArray arrayWithObjects:(NSString *)kUTTypeRTFD, (NSString *)kUTTypeWebArchive, nil]];
 	}
     }
     return outArray;
 }
 
-/* When a document is changed, it ceases to be transient. 
-*/
-- (void)updateChangeCount:(NSDocumentChangeType)change {
-    [self setTransient:NO];
-    [super updateChangeCount:change];
+- (NSArray *)writableTypesForSaveOperation:(NSSaveOperationType)saveOperation {
+	return [self writableTypesForSaveOperation:saveOperation ignoreTemporaryState:NO];
 }
 
 /* When we save, we send a notification so that views that are currently coalescing undo actions can break that. This is done for two reasons, one technical and the other HI oriented. 
@@ -947,15 +837,14 @@ In addition we overwrite this method as a way to tell that the document has been
 - (void)saveToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation completionHandler:(void (^)(NSError *error))handler {
     // Note that we do the breakUndoCoalescing call even during autosave, which means the user's undo of long typing will take them back to the last spot an autosave occured. This might seem confusing, and a more elaborate solution may be possible (cause an autosave without having to breakUndoCoalescing), but since this change is coming late in Leopard, we decided to go with the lower risk fix.
     [[self windowControllers] makeObjectsPerformSelector:@selector(breakUndoCoalescing)];
-    
+    [saveOperationTypeLock lock];
+    currentSaveOperation = saveOperation;
     [super saveToURL:absoluteURL ofType:typeName forSaveOperation:saveOperation completionHandler:^(NSError *error) {
-        BOOL success = (error == nil);
-        if (success && (saveOperation == NSSaveOperation || (saveOperation == NSSaveAsOperation))) {    // If successful, set document parameters changed during the save operation; ideally this should be done earlier
-            if ([self encodingForSaving] != NoStringEncoding) [self setEncoding:[self encodingForSaving]];
-        }
         [self setEncodingForSaving:NoStringEncoding];   // This is set during prepareSavePanel:, but should be cleared for future save operation without save panel
+        [saveOperationTypeLock unlock];
         handler(error);
     }];
+    
 }
 
 /* Indicate the types we know we can save safely asynchronously.
@@ -964,133 +853,340 @@ In addition we overwrite this method as a way to tell that the document has been
     return [[self class] canConcurrentlyReadDocumentsOfType:typeName];
 }
 
+- (NSError *)errorInTextEditDomainWithCode:(NSInteger)errorCode {
+    switch (errorCode) {
+        case TextEditSaveErrorWritableTypeRequired: {
+            NSString *description, *recoverySuggestion;
+            /* the document can't be saved in its original format, either because TextEdit cannot write to the format, or TextEdit cannot write documents containing
+                attachments to the format. */
+            if ([textStorage containsAttachments]) {
+                description = NSLocalizedString(@"Convert this document to RTFD format?",
+                                                    @"Title of alert panel prompting the user to convert to RTFD.");
+                recoverySuggestion = NSLocalizedString(
+                                                @"Documents with graphics and attachments will be saved using RTFD (RTF with graphics) format. RTFD documents are not compatible with some applications. Convert anyway?",
+                                                @"Contents of alert panel prompting the user to convert to RTFD.");
+            } else {
+                description = NSLocalizedString(@"Convert this document to RTF format?",
+                                @"Title of alert panel prompting the user to convert to RTF.");
+                recoverySuggestion = NSLocalizedString(@"This document must be converted to RTF before it can be modified.",
+                                        @"Contents of alert panel prompting the user to convert to RTF.");
+            }
+            return [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorWritableTypeRequired userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                description, NSLocalizedDescriptionKey,
+                recoverySuggestion, NSLocalizedRecoverySuggestionErrorKey,
+                [NSArray arrayWithObjects:
+                    NSLocalizedString(@"Convert", @"Button choice that allows the user to convert the document."),
+                    NSLocalizedString(@"Cancel", @"Button choice that allows the user to cancel."),
+                    NSLocalizedString(@"Duplicate", @"Button choice that allows the user to duplicate the document.")
+                , nil], NSLocalizedRecoveryOptionsErrorKey,
+                self, NSRecoveryAttempterErrorKey,
+                nil]];
+        }
+        case TextEditSaveErrorConvertedDocument: {
+            NSString *newFormatName = [textStorage containsAttachments] ? NSLocalizedString(@"rich text with graphics (RTFD)", @"Rich text with graphics file format name, displayed in alert") 
+                                      : NSLocalizedString(@"rich text", @"Rich text file format name, displayed in alert");
+            return [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorConvertedDocument userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                        NSLocalizedString(
+                            @"Are you sure you want to edit this document?",
+                            @"Title of alert panel asking the user whether he wants to edit a converted document."), NSLocalizedDescriptionKey,
+                [NSString stringWithFormat:NSLocalizedString(@"This document was converted from a format that TextEdit cannot save. It will be saved in %@ format.",
+                            @"Contents of alert panel informing user that the document is converted and cannot be written in its original format."), newFormatName], NSLocalizedRecoverySuggestionErrorKey, 
+                [NSArray arrayWithObjects:
+                    NSLocalizedString(@"Edit", @"Button choice that allows the user to save the document."),
+                    NSLocalizedString(@"Cancel", @"Button choice that allows the user to cancel."),
+                    NSLocalizedString(@"Duplicate", @"Button choice that allows the user to duplicate the document.")
+                    , nil], NSLocalizedRecoveryOptionsErrorKey,
+                self, NSRecoveryAttempterErrorKey,
+                nil]];
+        }
+        case TextEditSaveErrorLossyDocument: {
+            return [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorLossyDocument userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                NSLocalizedString(@"Are you sure you want to modify the document in place?", @"Title of alert panel which brings up a warning about saving over the same document"), NSLocalizedDescriptionKey,
+                NSLocalizedString(@"Modifying the document in place might cause you to lose some of the original formatting.  Would you like to duplicate the document first?", @"Contents of alert panel informing user that they need to supply a new file name because the save might be lossy"), NSLocalizedRecoverySuggestionErrorKey,
+                [NSArray arrayWithObjects:
+                    NSLocalizedString(@"Duplicate", @"Button choice that allows the user to duplicate the document."),
+                    NSLocalizedString(@"Cancel", @"Button choice that allows the user to cancel."),
+                    NSLocalizedString(@"Overwrite", @"Button choice allowing user to overwrite the document."), nil], NSLocalizedRecoveryOptionsErrorKey,
+                self, NSRecoveryAttempterErrorKey,
+                nil]];
+        }
+        case TextEditSaveErrorEncodingInapplicable: {
+            NSUInteger enc = [self encodingForSaving];
+            if (enc == NoStringEncoding) enc = [self encoding];
+            return [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorEncodingInapplicable userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                        [NSString stringWithFormat:NSLocalizedString(@"This document can no longer be saved using its original %@ encoding.", @"Title of alert panel informing user that the file's string encoding needs to be changed."), [NSString localizedNameOfStringEncoding:enc]], NSLocalizedDescriptionKey,
+                        NSLocalizedString(@"Please choose another encoding (such as UTF-8).", @"Subtitle of alert panel informing user that the file's string encoding needs to be changed"), NSLocalizedRecoverySuggestionErrorKey,
+                        NSLocalizedString(@"The specified text encoding isn\\U2019t applicable.",
+                            @"Failure reason stating that the text encoding is not applicable."), NSLocalizedFailureReasonErrorKey,
+                        [NSArray arrayWithObjects:
+                            NSLocalizedString(@"OK", @"OK"),
+                            NSLocalizedString(@"Cancel", @"Button choice that allows the user to cancel."), nil], NSLocalizedRecoveryOptionsErrorKey,
+                        self, NSRecoveryAttempterErrorKey,
+                        nil]];
+        }
+        
+    }
+    return nil;
+}
 
-/* Since a document into which the user has dragged graphics should autosave as RTFD, we override this method to return RTFD, unless the document was already RTFD, WebArchive, or plain (the last one done for optimization, to avoid calling containsAttachments).
-*/
+- (BOOL)checkAutosavingSafetyAfterChangeAndReturnError:(NSError **)outError {
+    BOOL safe = YES;
+	// it the document isn't saved, don't complain about limitations of its supposed backing store.
+	if ([self fileURL]) {
+    	if (![[self writableTypesForSaveOperation:NSSaveAsOperation] containsObject:[self fileType]]) {
+	        if (outError) *outError = [self errorInTextEditDomainWithCode:TextEditSaveErrorWritableTypeRequired];
+	        safe = NO;
+	    } else if (![self isRichText]) {
+	        NSUInteger encoding = [self encoding];
+	        if (encoding != NoStringEncoding && ![[textStorage string] canBeConvertedToEncoding:encoding]) {
+	            if (outError) *outError = [self errorInTextEditDomainWithCode:TextEditSaveErrorEncodingInapplicable];
+	            safe = NO;
+	        }
+	    }
+	}
+    return safe;
+}
+
+- (void)updateChangeCount:(NSDocumentChangeType)change {
+    NSError *error;
+    
+    // When a document is changed, it ceases to be transient.
+    [self setTransient:NO];
+    
+	[super updateChangeCount:change];
+
+    if (change == NSChangeDone || change == NSChangeRedone) {
+        // If we don't have a file URL, we can change our backing store type without consulting the user.
+        // NSDocument will update the extension of our autosaving location.
+        // If we don't do this, we won't be able to store images in autosaved untitled documents.
+        if (![self fileURL]) {
+            if (![[self writableTypesForSaveOperation:NSSaveAsOperation] containsObject:[self fileType]]) {
+                [self setFileType:(NSString *)([textStorage containsAttachments] ? kUTTypeRTFD : kUTTypeRTF)];
+            }
+        } else if (![self checkAutosavingSafetyAfterChangeAndReturnError:&error]) {
+            void (^didRecoverBlock)(BOOL) = ^(BOOL didRecover) {
+                if (!didRecover) {
+                    if (change == NSChangeDone || change == NSChangeRedone) {
+                        [[self undoManager] undo];
+                    } else if (change == NSChangeUndone) {
+                        [[self undoManager] redo];
+                    }
+                }
+            };
+            NSWindow *sheetWindow = [self windowForSheet];
+            if (sheetWindow) {
+                [self presentError:error
+                        modalForWindow:sheetWindow
+                        delegate:self
+                        didPresentSelector:@selector(didPresentErrorWithRecovery:block:)
+                        contextInfo:Block_copy(didRecoverBlock)];
+            } else {
+                didRecoverBlock([self presentError:error]);
+            }
+        }
+    }
+}
+
 - (NSString *)autosavingFileType {
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    NSString *type = [super autosavingFileType];
-    if ([workspace type:type conformsToType:(NSString *)kUTTypeRTFD] || [workspace type:type conformsToType:(NSString *)kUTTypeWebArchive] || [workspace type:type conformsToType:(NSString *)kUTTypePlainText]) return type;
-    if ([textStorage containsAttachments]) return (NSString *)kUTTypeRTFD;
-    return type;
+    if (inDuplicate) {
+        if (![[self writableTypesForSaveOperation:NSSaveAsOperation] containsObject:[self fileType]])
+            return (NSString *)([textStorage containsAttachments] ? kUTTypeRTFD : kUTTypeRTF);
+    }
+    return [super autosavingFileType];
 }
 
-
-/* When the file URL is set to nil, we store away the old URL. This happens when a document is converted to and from rich text. If the document exists on disk, we default to use the same base file when subsequently saving the document. 
-*/
-- (void)setFileURL:(NSURL *)url {
-    NSURL *previousURL = [self fileURL];
-    if (!url && previousURL) {
-	[defaultDestination release];
-	defaultDestination = [previousURL copy];
-    }
-    [super setFileURL:url];
+/* When we duplicate a document, we need to temporarily return the autosaving file type for the
+    resultant document.  Unfortunately, the only way to do this from a document subclass appears
+    to be to use a boolean indicator.
+ */
+- (NSDocument *)duplicateAndReturnError:(NSError **)outError {
+    NSDocument *result;
+    inDuplicate = YES;
+    result = [super duplicateAndReturnError:outError];
+    inDuplicate = NO;
+    return result;
 }
 
-- (void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo {
-    if (didRecover) {
-	[self performSelector:@selector(saveDocument:) withObject:self afterDelay:0.0];
-    }
+- (void)document:(NSDocument *)ignored didSave:(BOOL)didSave block:(void (^)(BOOL))block {
+    block(didSave);
+}
+
+- (void)didPresentErrorWithRecovery:(BOOL)didRecover block:(void (^)(BOOL))block {
+    block(didRecover);
 }
 
 - (void)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex delegate:(id)delegate didRecoverSelector:(SEL)didRecoverSelector contextInfo:(void *)contextInfo {
-    BOOL saveAgain = NO;
+    BOOL didRecover = NO;
     if ([[error domain] isEqualToString:TextEditErrorDomain]) {
-	switch ([error code]) {
-	    case TextEditSaveErrorConvertedDocument:
-		if (recoveryOptionIndex == 0) { // Save with new name
-		    [self setFileType:(NSString *)([textStorage containsAttachments] ? kUTTypeRTFD : kUTTypeRTF)];
-		    [self setFileURL:nil];
-		    [self setConverted:NO];
-		    saveAgain = YES;
-		} 
-		break;
-	    case TextEditSaveErrorLossyDocument:
-		if (recoveryOptionIndex == 0) { // Save with new name
-		    [self setFileURL:nil];
-		    [self setLossy:NO];
-		    saveAgain = YES;
-		} else if (recoveryOptionIndex == 1) { // Overwrite
-		    [self setLossy:NO];
-		    saveAgain = YES;
-		} 
-		break;
-	    case TextEditSaveErrorRTFDRequired:
-		if (recoveryOptionIndex == 0) { // Save with new name; enable the user to choose a new name to save with
-		    [self setFileType:(NSString *)kUTTypeRTFD];
-		    [self setFileURL:nil];
-		    saveAgain = YES;
-		} else if (recoveryOptionIndex == 1) { // Save as RTFD with the same name
-		    NSString *oldFilename = [[self fileURL] path];
-		    NSError *newError;
-		    if (![self saveToURL:[NSURL fileURLWithPath:[[oldFilename stringByDeletingPathExtension] stringByAppendingPathExtension:@"rtfd"]] ofType:(NSString *)kUTTypeRTFD forSaveOperation:NSSaveAsOperation error:&newError]) {
-			// If attempt to save as RTFD fails, let the user know
-			[self presentError:newError modalForWindow:[self windowForSheet] delegate:nil didPresentSelector:NULL contextInfo:contextInfo];
-		    } else {
-			// The RTFD is saved; we ignore error from trying to delete the RTF file
-			(void)[[NSFileManager defaultManager] removeItemAtPath:oldFilename error:NULL];
-		    }
-		    saveAgain = NO;
-		} 
-		break;
-	    case TextEditSaveErrorEncodingInapplicable:
-		[self setEncodingForSaving:NoStringEncoding];
-		[self setFileURL:nil];
-		saveAgain = YES;
-		break;
-	}
+        NSInteger errorCode = [error code];
+        switch (errorCode) {
+            case TextEditSaveErrorWritableTypeRequired:
+            case TextEditSaveErrorConvertedDocument:
+            case TextEditSaveErrorLossyDocument:
+                // duplicate button - index 0 for lossy document errors and index 2 otherwise
+                if (((errorCode == TextEditSaveErrorLossyDocument) && (recoveryOptionIndex == 0)) ||
+                    ((errorCode != TextEditSaveErrorLossyDocument) && (recoveryOptionIndex == 2))) {
+                    NSError *duplicateError;
+                    NSDocument *duplicateDocument;
+                    duplicateDocument = [self duplicateAndReturnError:&duplicateError];
+                    if (!duplicateDocument) {
+                        NSWindow *sheetWindow = [self windowForSheet];
+                        if (sheetWindow) {
+                            [delegate retain];
+                            [self presentError:duplicateError
+                                    modalForWindow:sheetWindow
+                                    delegate:self
+                                    didPresentSelector:@selector(didPresentErrorWithRecovery:block:)
+                                    contextInfo:Block_copy(^(BOOL didRecover) {
+                                        [delegate release];
+                                        ((void (*)(id, SEL, BOOL, void *))objc_msgSend)(delegate, didRecoverSelector, NO, contextInfo);
+                                    })];
+                            return;
+                        } else {
+                            [self presentError:duplicateError];
+                        }
+                    }
+                // save / overwrite button - index 2 for lossy document errors and 0 otherwise 
+                } else if (((errorCode == TextEditSaveErrorLossyDocument) && (recoveryOptionIndex == 2)) ||
+                    ((errorCode != TextEditSaveErrorLossyDocument) && (recoveryOptionIndex == 0))) {
+                    if (![[self writableTypesForSaveOperation:NSSaveAsOperation] containsObject:[self fileType]])
+                        [self setFileType:(NSString *)([textStorage containsAttachments] ? kUTTypeRTFD : kUTTypeRTF)];
+                    [self setConverted:NO];
+                    [self setLossy:NO];
+                    didRecover = YES;
+                }
+                break;
+            case TextEditSaveErrorEncodingInapplicable:
+                if (recoveryOptionIndex == 0) { // OK button
+                    [delegate retain];
+                    [self runModalSavePanelForSaveOperation:NSSaveOperation
+                        delegate:self
+                        didSaveSelector:@selector(document:didSave:block:)
+                        contextInfo:Block_copy(^(BOOL didSave) {
+                            [delegate release];
+                            ((void (*)(id, SEL, BOOL, void *))objc_msgSend)(delegate, didRecoverSelector, didSave, contextInfo);
+                        })];
+                    return;
+                }
+                break;
+        }
     }
-
-    [delegate didPresentErrorWithRecovery:saveAgain contextInfo:contextInfo];
+    // call the delegate's didRecoverSelector
+    ((void (*)(id, SEL, BOOL, void *))objc_msgSend)(delegate, didRecoverSelector, didRecover, contextInfo);
 }
 
-- (void)saveDocumentWithDelegate:(id)delegate didSaveSelector:(SEL)didSaveSelector contextInfo:(void *)contextInfo {
-    NSString *currType = [self fileType];
-    NSError *error = nil;
-    BOOL containsAttachments = [textStorage containsAttachments];
+/* Returns an object that represents the document to be written to file. 
+*/
+- (id)fileWrapperOfType:(NSString *)typeName error:(NSError **)outError {
+    NSTextStorage *text = [self textStorage];
+    NSRange range = NSMakeRange(0, [text length]);
+    NSStringEncoding enc;
     
-    if ([self fileURL]) {
-	if ([self isConverted]) {
-	    NSString *newFormatName = containsAttachments ? NSLocalizedString(@"rich text with graphics (RTFD)", @"Rich text with graphics file format name, displayed in alert") 
-							  : NSLocalizedString(@"rich text", @"Rich text file format name, displayed in alert");
-	    error = [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorConvertedDocument userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-		NSLocalizedString(@"Please supply a new name.", @"Title of alert panel which brings up a warning while saving, asking for new name"), NSLocalizedDescriptionKey,
-		[NSString stringWithFormat:NSLocalizedString(@"This document was converted from a format that TextEdit cannot save. It will be saved in %@ format with a new name.", @"Contents of alert panel informing user that they need to supply a new file name because the file needs to be saved using a different format than originally read in"), newFormatName], NSLocalizedRecoverySuggestionErrorKey, 
-		[NSArray arrayWithObjects:NSLocalizedString(@"Save with new name", @"Button choice allowing user to choose a new name"), NSLocalizedString(@"Cancel", @"Button choice allowing user to cancel."), nil], NSLocalizedRecoveryOptionsErrorKey,
-		self, NSRecoveryAttempterErrorKey,
-		nil]];
-	} else if ([self isLossy]) {
-	    error = [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorLossyDocument userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-		NSLocalizedString(@"Are you sure you want to overwrite the document?", @"Title of alert panel which brings up a warning about saving over the same document"), NSLocalizedDescriptionKey,
-		NSLocalizedString(@"Overwriting this document might cause you to lose some of the original formatting.  Would you like to save the document using a new name?", @"Contents of alert panel informing user that they need to supply a new file name because the save might be lossy"), NSLocalizedRecoverySuggestionErrorKey,
-		[NSArray arrayWithObjects:NSLocalizedString(@"Save with new name", @"Button choice allowing user to choose a new name"), NSLocalizedString(@"Overwrite", @"Button choice allowing user to overwrite the document."), NSLocalizedString(@"Cancel", @"Button choice allowing user to cancel."), nil], NSLocalizedRecoveryOptionsErrorKey,
-		self, NSRecoveryAttempterErrorKey,
-		nil]];
-	} else if (containsAttachments && ![[self writableTypesForSaveOperation:NSSaveAsOperation] containsObject:currType]) {
-	    error = [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorRTFDRequired userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-		NSLocalizedString(@"Are you sure you want to save using RTFD format?", @"Title of alert panel which brings up a warning while saving"), NSLocalizedDescriptionKey,
-		NSLocalizedString(@"This document contains graphics and will be saved using RTFD (RTF with graphics) format. RTFD documents are not compatible with some applications. Save anyway?", @"Contents of alert panel informing user that the document is being converted from RTF to RTFD, and allowing them to cancel, save anyway, or save with new name"), NSLocalizedRecoverySuggestionErrorKey,
-		[NSArray arrayWithObjects:NSLocalizedString(@"Save with new name", @"Button choice allowing user to choose a new name"), NSLocalizedString(@"Save", @"Button choice which allows the user to save the document."), NSLocalizedString(@"Cancel", @"Button choice allowing user to cancel."), nil], NSLocalizedRecoveryOptionsErrorKey,
-		self, NSRecoveryAttempterErrorKey,
-		nil]];
-	} else if (![self isRichText]) {
-	    NSUInteger enc = [self encodingForSaving];
-	    if (enc == NoStringEncoding) enc = [self encoding];
-	    if (![[textStorage string] canBeConvertedToEncoding:enc]) {
-		error = [NSError errorWithDomain:TextEditErrorDomain code:TextEditSaveErrorEncodingInapplicable userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-		    [NSString stringWithFormat:NSLocalizedString(@"This document can no longer be saved using its original %@ encoding.", @"Title of alert panel informing user that the file's string encoding needs to be changed."), [NSString localizedNameOfStringEncoding:enc]], NSLocalizedDescriptionKey,
-		    NSLocalizedString(@"Please choose another encoding (such as UTF-8).", @"Subtitle of alert panel informing user that the file's string encoding needs to be changed"), NSLocalizedRecoverySuggestionErrorKey,
-		    self, NSRecoveryAttempterErrorKey,
-		    nil]];
-	    }
-	}
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+	[NSValue valueWithSize:[self paperSize]], NSPaperSizeDocumentAttribute, 
+	[NSNumber numberWithInteger:[self isReadOnly] ? 1 : 0], NSReadOnlyDocumentAttribute, 
+	[NSNumber numberWithFloat:[self hyphenationFactor]], NSHyphenationFactorDocumentAttribute, 
+	[NSNumber numberWithDouble:[[self printInfo] leftMargin]], NSLeftMarginDocumentAttribute, 
+	[NSNumber numberWithDouble:[[self printInfo] rightMargin]], NSRightMarginDocumentAttribute, 
+	[NSNumber numberWithDouble:[[self printInfo] bottomMargin]], NSBottomMarginDocumentAttribute, 
+	[NSNumber numberWithDouble:[[self printInfo] topMargin]], NSTopMarginDocumentAttribute, 
+	[NSNumber numberWithInteger:[self hasMultiplePages] ? 1 : 0], NSViewModeDocumentAttribute,
+	nil];
+    NSString *docType = nil;
+    id val = nil; // temporary values
+    
+    NSSize size = [self viewSize];
+    if (!NSEqualSizes(size, NSZeroSize)) {
+	[dict setObject:[NSValue valueWithSize:size] forKey:NSViewSizeDocumentAttribute];
     }
     
-    if (error) {
-	[self presentError:error modalForWindow:[self windowForSheet] delegate:self didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:NULL];
+    // TextEdit knows how to save all these types, including their super-types. It does not know how to save any of their potential subtypes. Hence, the conformance check is the reverse of the usual pattern.
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+    if ([workspace type:(NSString *)kUTTypeRTF conformsToType:typeName]) docType = NSRTFTextDocumentType;
+    else if ([workspace type:(NSString *)kUTTypeRTFD conformsToType:typeName]) docType = NSRTFDTextDocumentType;
+    else if ([workspace type:(NSString *)kUTTypePlainText conformsToType:typeName]) docType = NSPlainTextDocumentType;
+    else if ([workspace type:SimpleTextType conformsToType:typeName]) docType = NSMacSimpleTextDocumentType;
+    else if ([workspace type:Word97Type conformsToType:typeName]) docType = NSDocFormatTextDocumentType;
+    else if ([workspace type:Word2007Type conformsToType:typeName]) docType = NSOfficeOpenXMLTextDocumentType;
+    else if ([workspace type:Word2003XMLType conformsToType:typeName]) docType = NSWordMLTextDocumentType;
+    else if ([workspace type:OpenDocumentTextType conformsToType:typeName]) docType = NSOpenDocumentTextDocumentType;
+    else if ([workspace type:(NSString *)kUTTypeHTML conformsToType:typeName]) docType = NSHTMLTextDocumentType;
+    else if ([workspace type:(NSString *)kUTTypeWebArchive conformsToType:typeName]) docType = NSWebArchiveTextDocumentType;
+    else [NSException raise:NSInvalidArgumentException format:@"%@ is not a recognized document type.", typeName];
+    
+    if (docType) [dict setObject:docType forKey:NSDocumentTypeDocumentAttribute];
+    if ([self hasMultiplePages] && ([self scaleFactor] != 1.0)) [dict setObject:[NSNumber numberWithDouble:[self scaleFactor] * 100.0] forKey:NSViewZoomDocumentAttribute];
+    if ((val = [self backgroundColor])) [dict setObject:val forKey:NSBackgroundColorDocumentAttribute];
+    
+    if (docType == NSPlainTextDocumentType) {
+        enc = [self encoding];
+        if ((currentSaveOperation == NSSaveOperation || currentSaveOperation == NSSaveAsOperation) && (documentEncodingForSaving != NoStringEncoding)) {
+            enc = documentEncodingForSaving;
+        }
+        if (enc == NoStringEncoding) enc = [self suggestedDocumentEncoding];
+        [dict setObject:[NSNumber numberWithUnsignedInteger:enc] forKey:NSCharacterEncodingDocumentAttribute];
+    } else if (docType == NSHTMLTextDocumentType || docType == NSWebArchiveTextDocumentType) {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSMutableArray *excludedElements = [NSMutableArray array];
+        if (![defaults boolForKey:UseXHTMLDocType]) [excludedElements addObject:@"XML"];
+        if (![defaults boolForKey:UseTransitionalDocType]) [excludedElements addObjectsFromArray:[NSArray arrayWithObjects:@"APPLET", @"BASEFONT", @"CENTER", @"DIR", @"FONT", @"ISINDEX", @"MENU", @"S", @"STRIKE", @"U", nil]];
+        if (![defaults boolForKey:UseEmbeddedCSS]) {
+            [excludedElements addObject:@"STYLE"];
+            if (![defaults boolForKey:UseInlineCSS]) [excludedElements addObject:@"SPAN"];
+        }
+        if (![defaults boolForKey:PreserveWhitespace]) {
+            [excludedElements addObject:@"Apple-converted-space"];
+            [excludedElements addObject:@"Apple-converted-tab"];
+            [excludedElements addObject:@"Apple-interchange-newline"];
+        }
+        [dict setObject:excludedElements forKey:NSExcludedElementsDocumentAttribute];
+        [dict setObject:[defaults objectForKey:HTMLEncoding] forKey:NSCharacterEncodingDocumentAttribute];
+        [dict setObject:[NSNumber numberWithInteger:2] forKey:NSPrefixSpacesDocumentAttribute];
+    }
+        
+    // Set the text layout orientation for each page
+    if ((val = [[[self windowControllers] objectAtIndex:0] layoutOrientationSections])) [dict setObject:val forKey:NSTextLayoutSectionsAttribute];
+
+    // Set the document properties, generically, going through key value coding
+    for (NSString *property in [self knownDocumentProperties]) {
+	id value = [self valueForKey:property];
+	if (value && ![value isEqual:@""] && ![value isEqual:[NSArray array]]) [dict setObject:value forKey:[[self documentPropertyToAttributeNameMappings] objectForKey:property]];
+    }
+    
+    NSFileWrapper *result = nil;
+    if (docType == NSRTFDTextDocumentType || (docType == NSPlainTextDocumentType && ![self isOpenedIgnoringRichText])) {	// We obtain a file wrapper from the text storage for RTFD (to produce a directory), or for true plain-text documents (to write out encoding in extended attributes)
+        result = [text fileWrapperFromRange:range documentAttributes:dict error:outError]; // returns NSFileWrapper
     } else {
-	[super saveDocumentWithDelegate:delegate didSaveSelector:didSaveSelector contextInfo:contextInfo];
+    	NSData *data = [text dataFromRange:range documentAttributes:dict error:outError]; // returns NSData
+	if (data) {
+	    result = [[[NSFileWrapper alloc] initRegularFileWithContents:data] autorelease];
+	    if (!result && outError) *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileWriteUnknownError userInfo:nil];    // Unlikely, but just in case we should generate an NSError
+        }
     }
+    if (result && docType == NSPlainTextDocumentType && (currentSaveOperation == NSSaveOperation || currentSaveOperation == NSSaveAsOperation)) {
+        [self setEncoding:enc];
+    }
+    
+    return result;
+}
+
+- (BOOL)checkAutosavingSafetyAndReturnError:(NSError **)outError {
+    BOOL safe = YES;
+    if (![super checkAutosavingSafetyAndReturnError:outError]) return NO;
+    if ([self fileURL]) {
+        // If the document is converted or lossy but can't be saved in its file type, we will need to save it in a different location or duplicate it anyway.  Therefore, we should tell the user that a writable type is required instead.
+        if (![[self writableTypesForSaveOperation:NSSaveAsOperation ignoreTemporaryState:YES] containsObject:[self fileType]]) {
+            if (outError) *outError = [self errorInTextEditDomainWithCode:TextEditSaveErrorWritableTypeRequired];
+            safe = NO;
+        } else if ([self isConverted]) {
+            if (outError) *outError = [self errorInTextEditDomainWithCode:TextEditSaveErrorConvertedDocument];
+            safe = NO;
+        } else if ([self isLossy]) {
+            if (outError) *outError = [self errorInTextEditDomainWithCode:TextEditSaveErrorLossyDocument];
+            safe = NO;
+        } 
+    }
+    return safe;
 }
 
 /* For plain-text documents, we add our own accessory view for selecting encodings. The plain text case does not require a format popup. 
@@ -1107,19 +1203,12 @@ In addition we overwrite this method as a way to tell that the document has been
     NSUInteger cnt;
     NSString *string;
     
-    if (defaultDestination) {
-	NSURL *directory = [defaultDestination URLByDeletingPathExtension];
-	BOOL isDir;
-	if ([[NSFileManager defaultManager] fileExistsAtPath:[directory path] isDirectory:&isDir] && isDir) {
-	    [savePanel setDirectoryURL:directory];
-	}
-    }
-    
     if (![self isRichText]) {
 	BOOL addExt = [[NSUserDefaults standardUserDefaults] boolForKey:AddExtensionToNewPlainTextFiles];
 	// If no encoding, figure out which encoding should be default in encoding popup, set as document encoding.
+	string = [textStorage string];
 	NSStringEncoding enc = [self encoding];
-	[self setEncodingForSaving:(enc == NoStringEncoding) ? [self suggestedDocumentEncoding] : enc];
+	[self setEncodingForSaving:(enc == NoStringEncoding || ![string canBeConvertedToEncoding:enc]) ? [self suggestedDocumentEncoding] : enc];
 	[savePanel setAccessoryView:[[[NSDocumentController sharedDocumentController] class] encodingAccessory:[self encodingForSaving] includeDefaultEntry:NO encodingPopUp:&encodingPopup checkBox:&extCheckbox]];
 	
 	// Set up the checkbox
@@ -1147,7 +1236,6 @@ In addition we overwrite this method as a way to tell that the document has been
 	
 	// Further set up the encoding popup
 	cnt = [encodingPopup numberOfItems];
-	string = [textStorage string];
 	if (cnt * [string length] < 5000000) {	// Otherwise it's just too slow; would be nice to make this more dynamic. With large docs and many encodings, the items just won't be validated.
 	    while (cnt--) {	// No reason go backwards except to use one variable instead of two
                 NSStringEncoding encoding = (NSStringEncoding)[[[encodingPopup itemAtIndex:cnt] representedObject] unsignedIntegerValue];
@@ -1164,16 +1252,6 @@ In addition we overwrite this method as a way to tell that the document has been
     return YES;
 }
 
-/* If the document does not exist on disk, but it has been converted from a document that existed on disk, return the base file name without the path extension. Otherwise return the default ("Untitled"). This is used for the window title and for the default name when saving. 
-*/
-- (NSString *)displayName {
-    if (![self fileURL] && defaultDestination) {
-	return [[[NSFileManager defaultManager] displayNameAtPath:[defaultDestination path]] stringByDeletingPathExtension];
-    } else {
-	return [super displayName];
-    }
-}
-
 @end
 
 
@@ -1184,4 +1262,3 @@ NSString *truncatedString(NSString *str, NSUInteger truncationLength) {
     if (len < truncationLength) return str;
     return [[str substringToIndex:truncationLength - 10] stringByAppendingString:@"\u2026"];	// Unicode character 2026 is ellipsis
 }
-
