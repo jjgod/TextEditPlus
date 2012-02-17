@@ -1,43 +1,49 @@
 /*
-        Document.m
-        Copyright (c) 1995-2011 by Apple Computer, Inc., all rights reserved.
-        Author: Ali Ozer
-
-        Document object for TextEdit. 
-	As of TextEdit 1.5, a subclass of NSDocument.
-*/
-/*
- IMPORTANT:  This Apple software is supplied to you by Apple Computer, Inc. ("Apple") in
- consideration of your agreement to the following terms, and your use, installation, 
- modification or redistribution of this Apple software constitutes acceptance of these 
- terms.  If you do not agree with these terms, please do not use, install, modify or 
+     File: Document.m
+ Abstract: Document object for TextEdit, a subclass of NSDocument.
+  Version: 1.7.1
+ 
+ Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
+ Inc. ("Apple") in consideration of your agreement to the following
+ terms, and your use, installation, modification or redistribution of
+ this Apple software constitutes acceptance of these terms.  If you do
+ not agree with these terms, please do not use, install, modify or
  redistribute this Apple software.
  
- In consideration of your agreement to abide by the following terms, and subject to these 
- terms, Apple grants you a personal, non-exclusive license, under Apple's copyrights in 
- this original Apple software (the "Apple Software"), to use, reproduce, modify and 
- redistribute the Apple Software, with or without modifications, in source and/or binary 
- forms; provided that if you redistribute the Apple Software in its entirety and without 
- modifications, you must retain this notice and the following text and disclaimers in all 
- such redistributions of the Apple Software.  Neither the name, trademarks, service marks 
- or logos of Apple Computer, Inc. may be used to endorse or promote products derived from 
- the Apple Software without specific prior written permission from Apple. Except as expressly
- stated in this notice, no other rights or licenses, express or implied, are granted by Apple
- herein, including but not limited to any patent rights that may be infringed by your 
- derivative works or by other works in which the Apple Software may be incorporated.
+ In consideration of your agreement to abide by the following terms, and
+ subject to these terms, Apple grants you a personal, non-exclusive
+ license, under Apple's copyrights in this original Apple software (the
+ "Apple Software"), to use, reproduce, modify and redistribute the Apple
+ Software, with or without modifications, in source and/or binary forms;
+ provided that if you redistribute the Apple Software in its entirety and
+ without modifications, you must retain this notice and the following
+ text and disclaimers in all such redistributions of the Apple Software.
+ Neither the name, trademarks, service marks or logos of Apple Inc. may
+ be used to endorse or promote products derived from the Apple Software
+ without specific prior written permission from Apple.  Except as
+ expressly stated in this notice, no other rights or licenses, express or
+ implied, are granted by Apple herein, including but not limited to any
+ patent rights that may be infringed by your derivative works or by other
+ works in which the Apple Software may be incorporated.
  
- The Apple Software is provided by Apple on an "AS IS" basis.  APPLE MAKES NO WARRANTIES, 
- EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, 
- MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS 
- USE AND OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
+ The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
+ MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
+ THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS
+ FOR A PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS USE AND
+ OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
  
- IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL OR CONSEQUENTIAL 
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) ARISING IN ANY WAY OUT OF THE USE, 
- REPRODUCTION, MODIFICATION AND/OR DISTRIBUTION OF THE APPLE SOFTWARE, HOWEVER CAUSED AND 
- WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR 
- OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
+ OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) ARISING IN ANY WAY OUT OF THE USE, REPRODUCTION,
+ MODIFICATION AND/OR DISTRIBUTION OF THE APPLE SOFTWARE, HOWEVER CAUSED
+ AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
+ STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+ 
+ Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ 
+ */
 
 #import <Cocoa/Cocoa.h>
 #import "EncodingManager.h"
@@ -62,10 +68,38 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 
 @implementation Document
 
++ (BOOL)isRichTextType:(NSString *)typeName {
+    /* We map all plain text documents to public.text.  Therefore a document is rich iff its type is not public.text. */
+    return ![typeName isEqualToString:(NSString *)kUTTypeText];
+}
+
++ (NSString *)readableTypeForType:(NSString *)type {
+    // There is a partial order on readableTypes given by UTTypeConformsTo. We linearly extend the partial order to a total order using <.
+    // Therefore we can compute the ancestor with greatest level (furthest from root) by linear search in the resulting array.
+    // Why do we have to do this?  Because type might conform to multiple readable types, such as "public.rtf" and "public.text" and "public.data"
+    // and we want to find the most specialized such type.
+    static NSArray *topologicallySortedReadableTypes;
+    static dispatch_once_t pred;
+    dispatch_once(&pred, ^{
+        topologicallySortedReadableTypes = [self readableTypes];
+        topologicallySortedReadableTypes = [topologicallySortedReadableTypes sortedArrayUsingComparator:^(id type1, id type2) {
+            if (type1 == type2) return (NSComparisonResult)NSOrderedSame;
+            if (UTTypeConformsTo((CFStringRef)type1, (CFStringRef)type2)) return (NSComparisonResult)NSOrderedAscending;
+            if (UTTypeConformsTo((CFStringRef)type2, (CFStringRef)type1)) return (NSComparisonResult)NSOrderedDescending;
+            return ((NSUInteger)type1 < (NSUInteger)type2) ? (NSComparisonResult)NSOrderedAscending : (NSComparisonResult)NSOrderedDescending;
+        }];
+        [topologicallySortedReadableTypes retain];
+    });
+    for (NSString *readableType in topologicallySortedReadableTypes) {
+        if (UTTypeConformsTo((CFStringRef)type, (CFStringRef)readableType)) return readableType;
+    }
+    return nil;
+}
+
 - (id)init {
     if ((self = [super init])) {
         [[self undoManager] disableUndoRegistration];
-        
+    
 	textStorage = [[NSTextStorage allocWithZone:[self zone]] init];
 	
 	[self setBackgroundColor:[NSColor whiteColor]];
@@ -96,7 +130,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     static dispatch_once_t once = 0; 
     dispatch_once(&once, ^{
 	documentMappings = [[NSDictionary alloc] initWithObjectsAndKeys:
-            (NSString *)kUTTypePlainText, NSPlainTextDocumentType,
+            (NSString *)kUTTypeText, NSPlainTextDocumentType,
             (NSString *)kUTTypeRTF, NSRTFTextDocumentType,
             (NSString *)kUTTypeRTFD, NSRTFDTextDocumentType,
             SimpleTextType, NSMacSimpleTextDocumentType,
@@ -123,28 +157,27 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     NSDictionary *docAttrs;
     id val, paperSizeVal, viewSizeVal;
     NSTextStorage *text = [self textStorage];
-
+    
+    /* generalize the passed-in type to a type we support.  for instance, generalize "public.xml" to "public.txt" */
+    typeName = [[self class] readableTypeForType:typeName];
+    
     [fileTypeToSet release];
     fileTypeToSet = nil;
     
     [[self undoManager] disableUndoRegistration];
     
     [options setObject:absoluteURL forKey:NSBaseURLDocumentOption];
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    if (encoding == NoStringEncoding &&
-        ([workspace type:typeName conformsToType:(NSString *)kUTTypePlainText]))
-        encoding = [[EncodingManager sharedInstance] detectedEncodingForURL:absoluteURL];
-
     if (encoding != NoStringEncoding) {
         [options setObject:[NSNumber numberWithUnsignedInteger:encoding] forKey:NSCharacterEncodingDocumentOption];
     }
     [self setEncoding:encoding];
     
     // Check type to see if we should load the document as plain. Note that this check isn't always conclusive, which is why we do another check below, after the document has been loaded (and correctly categorized).
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     if ((ignoreRTF && ([workspace type:typeName conformsToType:(NSString *)kUTTypeRTF] || [workspace type:typeName conformsToType:Word2003XMLType])) || (ignoreHTML && [workspace type:typeName conformsToType:(NSString *)kUTTypeHTML]) || [self isOpenedIgnoringRichText]) {
         [options setObject:NSPlainTextDocumentType forKey:NSDocumentTypeDocumentOption]; // Force plain
-	[self setFileType:(NSString *)kUTTypePlainText];
-	[self setOpenedIgnoringRichText:YES];
+        typeName = (NSString *)kUTTypeText;
+        [self setOpenedIgnoringRichText:YES];
     }
     
     [[text mutableString] setString:@""];
@@ -165,7 +198,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[text beginEditing];
 	success = [text readFromURL:absoluteURL options:options documentAttributes:&docAttrs error:outError];
 
-        if (!success) {
+    if (!success) {
 	    [text endEditing];
 	    layoutMgrEnum = [layoutMgrs objectEnumerator]; // rewind
 	    while ((layoutMgr = [layoutMgrEnum nextObject])) [text addLayoutManager:layoutMgr];   // Add the layout managers back
@@ -180,21 +213,25 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	    [text endEditing];
 	    [[text mutableString] setString:@""];
 	    [options setObject:NSPlainTextDocumentType forKey:NSDocumentTypeDocumentOption];
-	    [self setFileType:(NSString *)kUTTypePlainText];
+	    typeName = (NSString *)kUTTypeText;
 	    [self setOpenedIgnoringRichText:YES];
 	    retry = YES;
 	} else {
 	    NSString *newFileType = [[self textDocumentTypeToTextEditDocumentTypeMappingTable] objectForKey:docType];
 	    if (newFileType) {
-		[self setFileType:newFileType];
+            typeName = newFileType;
 	    } else {
-		[self setFileType:(NSString *)kUTTypeRTF];	// Hmm, a new type in the Cocoa text system. Treat it as rich. ??? Should set the converted flag too?
+            typeName = (NSString *)kUTTypeRTF; // Hmm, a new type in the Cocoa text system. Treat it as rich. ??? Should set the converted flag too?
 	    }
-	    if ([workspace type:[self fileType] conformsToType:(NSString *)kUTTypePlainText]) [self applyDefaultTextAttributes:NO];
+        if (![[self class] isRichTextType:typeName]) [self applyDefaultTextAttributes:NO];
 	    [text endEditing];
 	}
     } while(retry);
-
+    
+    [self setFileType:typeName];
+    // If we're reverting, NSDocument will set the file type behind out backs. This enables restoring that type.
+    fileTypeToSet = [typeName copy];
+    
     layoutMgrEnum = [layoutMgrs objectEnumerator]; // rewind
     while ((layoutMgr = [layoutMgrEnum nextObject])) [text addLayoutManager:layoutMgr];   // Add the layout managers back
     [layoutMgrs release];
@@ -258,9 +295,6 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [self setOriginalOrientationSections:[docAttrs objectForKey:NSTextLayoutSectionsAttribute]];
     
     [[self undoManager] enableUndoRegistration];
-    
-    // If we're reverting, NSDocument will set the file type behind out backs. This enables restoring that type.
-    fileTypeToSet = [[self fileType] copy];
     
     return YES;
 }
@@ -491,22 +525,14 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     return YES;
 }
 
-
-/* The rich text status is dependent on the document type, and vice versa. Making a plain document rich, will -setFileType: to RTF. 
-*/
-- (void)setRichText:(BOOL)flag {
-    if (flag != [self isRichText]) {
-	[self setFileType:(NSString *)(flag ? kUTTypeRTF : kUTTypePlainText)];
-	if (flag) {
-	    [self setDocumentPropertiesToDefaults];
-	} else {
-	    [self clearDocumentProperties];
-	}
-    }
+- (void)setFileType:(NSString *)type {
+    /* Due to sandboxing, we cannot (usefully) directly change the document's file URL except for changing it to nil.  This means that when we convert a document from rich text to plain text, our only way of updating the file URL is to have NSDocument do it for us in response to a change in our file type.  However, it is not as simple as setting our type to kUTTypeText, as would be accurate, because if we have a rtf document, public.rtf inherits from public.text and so NSDocument wouldn't change our extension (which is correct, BTW, since it's also perfectly valid to open a rtf and not interpret the rtf commands, in which case a save of a rtf document as kUTTypeText should not change the extension).  Therefore we need to save using a subtype of kUTTypeText that isn't in the path from kUTTypeText to kUTTypeRTF.  The obvious candidate is kUTTypePlainText.  Therefore, we need to save using kUTTypePlainText when we convert a rtf to plain text and then map the file type from kTTypePlainText to kUTTypeText.  The inverse of the mapping occurs here. */
+    if ([type isEqualToString:(NSString *)kUTTypePlainText]) type = (NSString *)kUTTypeText;
+    [super setFileType:type];
 }
 
 - (BOOL)isRichText {
-    return ![[NSWorkspace sharedWorkspace] type:[self fileType] conformsToType:(NSString *)kUTTypePlainText];
+    return [[self class] isRichTextType:[self fileType]];
 }
 
 
@@ -806,17 +832,17 @@ CGFloat defaultTextPadding(void) {
     }
 }
 
-/* One of the determinants of whether a file is locked is whether its type is one of our writable types. However, the writable types are a function of whether the document contains attachments. But whether we are locked cannot be a function of whether the document contains attachments, because we won't be asked to redetermine autosaving safety after an undo operation resulting from a cancel, so the document would continue to appear locked if an image were dragged in and then cancel was pressed.  Therefore, we must use an "ignoreTemporary" boolean to treat RTF as temporarily writable despite the attachments.  That's fine since -checkAutosavingSafetyAfterChangeAndReturnError: will perform this check again with ignoreTemporary set to YES, and that method will be called when the operation is done and undone, so no inconsistency results. 
+/* One of the determinants of whether a file is locked is whether its type is one of our writable types. However, the writable types are a function of whether the document contains attachments. But whether we are locked cannot be a function of whether the document contains attachments, because we won't be asked to redetermine autosaving safety after an undo operation resulting from a cancel, so the document would continue to appear locked if an image were dragged in and then cancel was pressed.  Therefore, we must use an "ignoreTemporary" boolean to treat RTF as temporarily writable despite the attachments.  That's fine since -checkAutosavingSafetyAfterChangeAndReturnError: will perform this check again with ignoreTemporary set to NO, and that method will be called when the operation is done and undone, so no inconsistency results. 
 */
 - (NSArray *)writableTypesForSaveOperation:(NSSaveOperationType)saveOperation ignoreTemporaryState:(BOOL)ignoreTemporary {
     NSMutableArray *outArray = [[[[self class] writableTypes] mutableCopy] autorelease];
     if (saveOperation == NSSaveAsOperation) {
 	// Rich-text documents cannot be saved as plain text.
 	if ([self isRichText]) {
-	    [outArray removeObject:(NSString *)kUTTypePlainText];
+	    [outArray removeObject:(NSString *)kUTTypeText];
 	}
 	
-	// Documents that contain attacments can only be saved in formats that support embedded graphics.
+	// Documents that contain attachments can only be saved in formats that support embedded graphics.
 	if (!ignoreTemporary && [textStorage containsAttachments]) {
 	    [outArray setArray:[NSArray arrayWithObjects:(NSString *)kUTTypeRTFD, (NSString *)kUTTypeWebArchive, nil]];
 	}
@@ -828,6 +854,12 @@ CGFloat defaultTextPadding(void) {
 	return [self writableTypesForSaveOperation:saveOperation ignoreTemporaryState:NO];
 }
 
+- (NSString *)fileNameExtensionForType:(NSString *)inTypeName saveOperation:(NSSaveOperationType)inSaveOperation {
+    /* We use kUTTypeText as our plain text type.  However, kUTTypeText is really a class of types and therefore contains no preferred extension.  Therefore we must specify a preferred extension, that of kUTTypePlainText. */
+    if ([inTypeName isEqualToString:(NSString *)kUTTypeText]) return @"txt";
+    return [super fileNameExtensionForType:inTypeName saveOperation:inSaveOperation];
+}
+
 /* When we save, we send a notification so that views that are currently coalescing undo actions can break that. This is done for two reasons, one technical and the other HI oriented. 
 
 Firstly, since the dirty state tracking is based on undo, for a coalesced set of changes that span over a save operation, the changes that occur between the save and the next time the undo coalescing stops will not mark the document as dirty. Secondly, allowing the user to undo back to the precise point of a save is good UI. 
@@ -837,10 +869,11 @@ In addition we overwrite this method as a way to tell that the document has been
 - (void)saveToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation completionHandler:(void (^)(NSError *error))handler {
     // Note that we do the breakUndoCoalescing call even during autosave, which means the user's undo of long typing will take them back to the last spot an autosave occured. This might seem confusing, and a more elaborate solution may be possible (cause an autosave without having to breakUndoCoalescing), but since this change is coming late in Leopard, we decided to go with the lower risk fix.
     [[self windowControllers] makeObjectsPerformSelector:@selector(breakUndoCoalescing)];
-    [saveOperationTypeLock lock];
+	[saveOperationTypeLock lock];
     currentSaveOperation = saveOperation;
+	handler = [Block_copy(handler) autorelease];
     [super saveToURL:absoluteURL ofType:typeName forSaveOperation:saveOperation completionHandler:^(NSError *error) {
-        [self setEncodingForSaving:NoStringEncoding];   // This is set during prepareSavePanel:, but should be cleared for future save operation without save panel
+            [self setEncodingForSaving:NoStringEncoding];   // This is set during prepareSavePanel:, but should be cleared for future save operation without save panel
         [saveOperationTypeLock unlock];
         handler(error);
     }];
@@ -1102,9 +1135,11 @@ In addition we overwrite this method as a way to tell that the document has been
     
     // TextEdit knows how to save all these types, including their super-types. It does not know how to save any of their potential subtypes. Hence, the conformance check is the reverse of the usual pattern.
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    if ([workspace type:(NSString *)kUTTypeRTF conformsToType:typeName]) docType = NSRTFTextDocumentType;
+    // kUTTypePlainText also handles kUTTypeText and has to come before the other types so we will use the least specialized type
+    // For example, kUTTypeText is an ancestor of kUTTypeText and kUTTypeRTF but we should use kUTTypeText because kUTTypeText is an ancestor of kUTTypeRTF.
+    if ([workspace type:(NSString *)kUTTypePlainText conformsToType:typeName]) docType = NSPlainTextDocumentType;
+    else if ([workspace type:(NSString *)kUTTypeRTF conformsToType:typeName]) docType = NSRTFTextDocumentType;
     else if ([workspace type:(NSString *)kUTTypeRTFD conformsToType:typeName]) docType = NSRTFDTextDocumentType;
-    else if ([workspace type:(NSString *)kUTTypePlainText conformsToType:typeName]) docType = NSPlainTextDocumentType;
     else if ([workspace type:SimpleTextType conformsToType:typeName]) docType = NSMacSimpleTextDocumentType;
     else if ([workspace type:Word97Type conformsToType:typeName]) docType = NSDocFormatTextDocumentType;
     else if ([workspace type:Word2007Type conformsToType:typeName]) docType = NSOfficeOpenXMLTextDocumentType;
