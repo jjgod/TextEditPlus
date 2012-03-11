@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0744194F150CD92F0073CF14 /* UniversalDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 0744194E150CD92F0073CF14 /* UniversalDetector.h */; };
+		07441951150CD9510073CF14 /* libUniversalDetector.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07441950150CD9510073CF14 /* libUniversalDetector.a */; };
 		07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83A13D8C5A9004E932B /* JJTypesetter.h */; };
 		07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C9E83B13D8C5A9004E932B /* JJTypesetter.m */; };
-		07C9E83F13D8C5B3004E932B /* chardetect.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83E13D8C5B3004E932B /* chardetect.h */; };
-		07C9E84113D8C5BB004E932B /* chardetect.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07C9E84013D8C5BB004E932B /* chardetect.a */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
 		176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 176A30470E23EB0600857A3B /* FontNameTransformer.m */; };
 		176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */; };
@@ -71,10 +71,10 @@
 		0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		0230D2BFFF2F85EF11CA0C5D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		0744194E150CD92F0073CF14 /* UniversalDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UniversalDetector.h; sourceTree = "<group>"; };
+		07441950150CD9510073CF14 /* libUniversalDetector.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUniversalDetector.a; sourceTree = "<group>"; };
 		07C9E83A13D8C5A9004E932B /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
 		07C9E83B13D8C5A9004E932B /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
-		07C9E83E13D8C5B3004E932B /* chardetect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chardetect.h; sourceTree = "<group>"; };
-		07C9E84013D8C5BB004E932B /* chardetect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = chardetect.a; sourceTree = "<group>"; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
 		176A30470E23EB0600857A3B /* FontNameTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FontNameTransformer.m; sourceTree = "<group>"; };
 		176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditDefaultsKeys.h; sourceTree = "<group>"; };
@@ -138,7 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */,
-				07C9E84113D8C5BB004E932B /* chardetect.a in Frameworks */,
+				07441951150CD9510073CF14 /* libUniversalDetector.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,7 +165,7 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
-				07C9E83E13D8C5B3004E932B /* chardetect.h */,
+				0744194E150CD92F0073CF14 /* UniversalDetector.h */,
 				07C9E83A13D8C5A9004E932B /* JJTypesetter.h */,
 				07C9E83B13D8C5A9004E932B /* JJTypesetter.m */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
@@ -264,7 +264,7 @@
 		6FE20939FE93D5F211CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				07C9E84013D8C5BB004E932B /* chardetect.a */,
+				07441950150CD9510073CF14 /* libUniversalDetector.a */,
 				0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */,
 				0230D2BEFF2F85A411CA0C5D /* References (Non-linked frameworks) */,
 			);
@@ -295,7 +295,7 @@
 				176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */,
 				4116BCFE1317428900C7C8C1 /* PrintingTextView.h in Headers */,
 				07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */,
-				07C9E83F13D8C5B3004E932B /* chardetect.h in Headers */,
+				0744194F150CD92F0073CF14 /* UniversalDetector.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,7 +329,7 @@
 		6FE208F8FE93D5F211CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = 41534B9208A2B299002069FE /* Build configuration list for PBXProject "TextEdit" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -559,6 +559,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"\"$(SRCROOT)\"",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)\"";
 				MACOSX_DEPLOYMENT_TARGET = "";
@@ -604,6 +605,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"\"$(SRCROOT)\"",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)\"";
 				MACOSX_DEPLOYMENT_TARGET = "";
