@@ -53,6 +53,7 @@
 #import "TextEditDefaultsKeys.h"
 #import "TextEditMisc.h"
 #import "TextEditErrors.h"
+#import "JJTypesetter.h"
 
 @interface DocumentWindowController(Private)
 
@@ -139,7 +140,11 @@
 	}
 	
 	if (doc) {
+            JJTypesetter *typesetter = [[JJTypesetter alloc] init];
+            [typesetter setEnabled: [doc isRichText] ? NO : YES];
+            [layoutMgr setTypesetter:typesetter];
             [[doc textStorage] addLayoutManager:layoutMgr];
+            [typesetter release];
 	    
 	    if ([self isWindowLoaded]) {
                 [self setHasMultiplePages:[doc hasMultiplePages] force:NO];
