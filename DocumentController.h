@@ -1,8 +1,10 @@
+
 /*
      File: DocumentController.h
- Abstract: NSDocumentController subclass for TextEdit
+ Abstract: NSDocumentController subclass for TextEdit.
  Required to support transient documents and customized Open panel.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -42,13 +44,14 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
 #import <Cocoa/Cocoa.h>
 #import "Document.h"
 
+/* An instance of this subclass is created in the main nib file. */
 
 // NSDocumentController is subclassed to provide for modification of the open panel. Normally, there is no need to subclass the document controller.
 @interface DocumentController : NSDocumentController {
@@ -66,7 +69,7 @@
 - (BOOL)lastSelectedIgnoreHTMLForURL:(NSURL *)url;
 - (BOOL)lastSelectedIgnoreRichForURL:(NSURL *)url;
 
-- (NSInteger)runModalOpenPanel:(NSOpenPanel *)openPanel forTypes:(NSArray *)types;
+- (void)beginOpenPanel:(NSOpenPanel *)openPanel forTypes:(NSArray *)types completionHandler:(void (^)(NSInteger result))completionHandler;
 
 - (Document *)transientDocumentToReplace;
 - (void)displayDocument:(NSDocument *)doc;

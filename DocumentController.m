@@ -1,8 +1,10 @@
+
 /*
      File: DocumentController.m
- Abstract: NSDocumentController subclass for TextEdit
+ Abstract: NSDocumentController subclass for TextEdit.
  Required to support transient documents and customized Open panel.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -42,7 +44,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
@@ -289,40 +291,42 @@
     return [owner->accessoryView autorelease];
 }
 
-/* To support selection of a fallback encoding, we override this method and add an accessory view.
+/* Overridden to add an accessory view to the open panel. This method is called for both modal and non-modal invocations.
 */
-- (NSInteger)runModalOpenPanel:(NSOpenPanel *)openPanel forTypes:(NSArray *)types {
+- (void)beginOpenPanel:(NSOpenPanel *)openPanel forTypes:(NSArray *)types completionHandler:(void (^)(NSInteger result))completionHandler {
     NSButton *ignoreRichTextButton;
     NSPopUpButton *encodingPopUp;
-    NSUInteger encoding;
-    BOOL ignoreHTML = [[NSUserDefaults standardUserDefaults] boolForKey:IgnoreHTML];
-    BOOL ignoreRich = [[NSUserDefaults standardUserDefaults] boolForKey:IgnoreRichText];
-    NSInteger result;
-    
+
+    BOOL ignoreHTMLOrig = [[NSUserDefaults standardUserDefaults] boolForKey:IgnoreHTML];
+    BOOL ignoreRichOrig = [[NSUserDefaults standardUserDefaults] boolForKey:IgnoreRichText];
     [openPanel setAccessoryView:[[self class] encodingAccessory:[[[NSUserDefaults standardUserDefaults] objectForKey:PlainTextEncodingForRead] unsignedIntegerValue] includeDefaultEntry:YES encodingPopUp:&encodingPopUp checkBox:&ignoreRichTextButton]];
     [ignoreRichTextButton setTitle:NSLocalizedString(@"Ignore rich text commands", @"Checkbox indicating that when opening a rich text file, the rich text should be ignored (causing the file to be loaded as plain text)")];
     [ignoreRichTextButton setToolTip:NSLocalizedString(@"If selected, HTML and RTF files will be loaded as plain text, allowing you to see and edit the HTML or RTF directives.", @"Tooltip for checkbox indicating that when opening a rich text file, the rich text should be ignored (causing the file to be loaded as plain text)")];
-    if (ignoreRich != ignoreHTML) {
+    if (ignoreRichOrig != ignoreHTMLOrig) {
 	[ignoreRichTextButton setAllowsMixedState:YES];
 	[ignoreRichTextButton setState:NSMixedState];
     } else {
 	if ([ignoreRichTextButton allowsMixedState]) [ignoreRichTextButton setAllowsMixedState:NO];
-	[ignoreRichTextButton setState:ignoreRich ? NSOnState : NSOffState];
+	[ignoreRichTextButton setState:ignoreRichOrig ? NSOnState : NSOffState];
     }
-    
-    result = [super runModalOpenPanel:openPanel forTypes:types];
-    if (result == NSOKButton) {
-	encoding = (NSStringEncoding)[[[encodingPopUp selectedItem] representedObject] unsignedIntegerValue];
-	NSInteger ignoreState = [ignoreRichTextButton state];
-	if (ignoreState != NSMixedState) {  // Mixed state indicates they were different, and to leave them alone
-	    ignoreHTML = ignoreRich = (ignoreState == NSOnState);
-	}
-        NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:encoding], PlainTextEncodingForRead, [NSNumber numberWithBool:ignoreHTML], IgnoreHTML, [NSNumber numberWithBool:ignoreRich], IgnoreRichText, nil];
-        for (NSURL *url in [openPanel URLs]) {
-            [customOpenSettings setObject:options forKey:url];
+
+    [super beginOpenPanel:openPanel forTypes:types completionHandler:^(NSInteger result) {
+        if (result == NSOKButton) {
+            BOOL ignoreHTML = ignoreHTMLOrig;
+            BOOL ignoreRich = ignoreRichOrig;
+            NSUInteger encoding = (NSStringEncoding)[[[encodingPopUp selectedItem] representedObject] unsignedIntegerValue];
+            NSInteger ignoreState = [ignoreRichTextButton state];
+            if (ignoreState != NSMixedState) {  // Mixed state indicates they were different, and to leave them alone
+                ignoreHTML = ignoreRich = (ignoreState == NSOnState);
+            }
+            NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:encoding], PlainTextEncodingForRead, [NSNumber numberWithBool:ignoreHTML], IgnoreHTML, [NSNumber numberWithBool:ignoreRich], IgnoreRichText, nil];
+            for (NSURL *url in [openPanel URLs]) {
+                [customOpenSettings setObject:options forKey:url];
+            }
         }
-    }
-    return result;
+        completionHandler(result);
+    }];
+    
 }
 
 - (NSStringEncoding)lastSelectedEncodingForURL:(NSURL *)url {

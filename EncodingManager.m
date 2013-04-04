@@ -1,8 +1,10 @@
+
 /*
      File: EncodingManager.m
  Abstract: Helper class providing additional functionality for character encodings.
  This file also defines the EncodingPopUpButtonCell class.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -42,13 +44,13 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
 #import <Cocoa/Cocoa.h>
 #import "EncodingManager.h"
-#import "UniversalDetector.h"
+
 
 /*
     EncodingPopUpButtonCell is a subclass of NSPopUpButtonCell which provides the ability to automatically recompute its contents on changes to the encodings list. This allows sprinkling these around the app any have them automatically update themselves. Because we really only want to know when the cell's selectedItem is changed, we want to prevent the last item ("Customize...") from being selected.
@@ -322,31 +324,9 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr) {
     [self noteEncodingListChange:NO updateList:YES postNotification:YES];
 }
 
-#define BUFSIZE	4096
-
-/* Use universal charset detector to automatically determine which encoding
- * we should use to open the URL */
-- (NSStringEncoding) detectedEncodingForURL: (NSURL *) url
-{
-    UniversalDetector *detector = [UniversalDetector detector];
-    FILE     *fp;
-    char      buf[BUFSIZE];
-    int       len, total = 0;
-
-    fp = fopen([[url path] fileSystemRepresentation], "r");
-    if (! fp)
-        return NoStringEncoding;
-
-    do
-    {
-        len = fread(buf, 1, sizeof(buf), fp);
-        total += len;
-        [detector analyzeBytes: buf length: len];
-    } while ([detector confidence] < 0.9 && ![detector done] && (feof(fp) == 0));
-
-    fclose(fp);
-
-    return [detector encoding];
-}
 
 @end
+
+
+
+

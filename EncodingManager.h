@@ -1,8 +1,10 @@
+
 /*
      File: EncodingManager.h
  Abstract: Helper class providing additional functionality for character encodings.
  This file also defines the EncodingPopUpButtonCell class.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -42,7 +44,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
@@ -93,8 +95,5 @@ enum {
 */
 - (void)noteEncodingListChange:(BOOL)writeDefault updateList:(BOOL)updateList postNotification:(BOOL)post;
 
-/* Use universal charset detector to automatically determine which encoding
- * we should use to open the URL */
-- (NSStringEncoding)detectedEncodingForURL:(NSURL *)url;
 
 @end

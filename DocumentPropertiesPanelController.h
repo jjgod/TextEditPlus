@@ -1,10 +1,14 @@
+
 /*
      File: DocumentPropertiesPanelController.h
- Abstract: "Document Properties" panel controller for TextEdit.
- There is a little more code here than one would like, however, this code does show steps needed to implement a non-modal inspector panel using bindings, and have the fields in the panel correctly commit when the panel loses key, or the document it is associated with is saved or made non-key (inactive).
+ Abstract: "Document Properties" panel controller for TextEdit.  There is a little more code here than one would like,
+ however, this code does show steps needed to implement a non-modal inspector panel using bindings, and have
+ the fields in the panel correctly commit when the panel loses key, or the document it is associated with
+ is saved or made non-key (inactive).
  
  This class is mostly reusable, except with the assumption that commitEditing always succeeds.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -44,7 +48,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 

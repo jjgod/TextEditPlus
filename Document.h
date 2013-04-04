@@ -1,7 +1,9 @@
+
 /*
      File: Document.h
- Abstract: Document object for TextEdit, a subclass of NSDocument.
-  Version: 1.7.1
+ Abstract: Document object for TextEdit. 
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -41,7 +43,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
@@ -59,7 +61,8 @@
     CGFloat hyphenationFactor;		/* Hyphenation factor in range 0.0-1.0 */
     NSSize viewSize;			/* The view size, as stored in an RTF document. Can be NSZeroSize */
     BOOL hasMultiplePages;		/* Whether the document prefers a paged display */
-    
+    BOOL usesScreenFonts;		/* The document allows using screen fonts */
+
     // The next seven are document properties (applicable only to rich text documents)
     NSString *author;			/* Corresponds to NSAuthorDocumentAttribute */
     NSString *copyright;		/* Corresponds to NSCopyrightDocumentAttribute */
@@ -171,4 +174,8 @@
 /* Layout orientation sections */
 - (NSArray *)originalOrientationSections;
 - (void)setOriginalOrientationSections:(NSArray *)array;
+
+/* Screen fonts property */
+- (BOOL)usesScreenFonts;
+- (void)setUsesScreenFonts:(BOOL)aFlag;
 @end

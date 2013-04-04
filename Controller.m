@@ -1,8 +1,10 @@
+
 /*
      File: Controller.m
- Abstract: Central controller object for TextEdit, for implementing app functionality (services) as well 
+ Abstract: Central controller object for TextEdit, for implementing app functionality (services) as well
  as few tidbits for which there are no dedicated controllers.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -42,7 +44,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
@@ -94,6 +96,7 @@ static NSDictionary *defaultValues() {
                 [NSNumber numberWithBool:NO], UseInlineCSS,
                 [NSNumber numberWithUnsignedInteger:NSUTF8StringEncoding], HTMLEncoding,
                 [NSNumber numberWithBool:YES], PreserveWhitespace,
+                [NSNumber numberWithBool:NO], UseScreenFonts,
 		nil];
     }
     return dict;

@@ -21,6 +21,8 @@
 			<string>Editor</string>
 			<key>LSIsAppleDefaultForType</key>
 			<true/>
+			<key>NSIsRelatedItemType</key>
+			<true/>
 			<key>NSDocumentClass</key>
 			<string>Document</string>
 		</dict>
@@ -38,6 +40,8 @@
 			<key>LSIsAppleDefaultForType</key>
 			<true/>
 			<key>LSTypeIsPackage</key>
+			<true/>
+			<key>NSIsRelatedItemType</key>
 			<true/>
 			<key>NSDocumentClass</key>
 			<string>Document</string>
@@ -150,7 +154,7 @@
 			<key>NSDocumentClass</key>
 			<string>Document</string>
 		</dict>
-        <dict>
+		<dict>
 			<key>CFBundleTypeIconFile</key>
 			<string>txt.icns</string>
 			<key>CFBundleTypeName</key>
@@ -162,6 +166,8 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>NSIsRelatedItemType</key>
 			<true/>
 			<key>NSDocumentClass</key>
 			<string>Document</string>
@@ -214,13 +220,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.7</string>
+	<string>1.8</string>
 	<key>CFBundleSignature</key>
 	<string>ttxt</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.7</string>
+	<string>10.8</string>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>

@@ -1,7 +1,9 @@
+
 /*
      File: ScalingScrollView.h
- Abstract: A subclass of NSScrollView that supports content scaling.
-  Version: 1.7.1
+ Abstract: NSScrollView subclass to support scaling content.
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -41,7 +43,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
@@ -49,18 +51,14 @@
 
 @class NSPopUpButton;
 
-@interface ScalingScrollView : NSScrollView {
-    NSPopUpButton *_scalePopUpButton;
-    CGFloat scaleFactor;
-}
+@interface ScalingScrollView : NSScrollView
 
-- (IBAction)scalePopUpAction:(id)sender;
 - (void)setScaleFactor:(CGFloat)factor adjustPopup:(BOOL)flag;
 - (CGFloat)scaleFactor;
 
+- (IBAction)zoomToActualSize:(id)sender;
+- (IBAction)zoomIn:(id)sender;
+- (IBAction)zoomOut:(id)sender;
+
 @end
 
-@protocol ScalingScrollViewDocument
-@optional
-- (BOOL)showsScalePopUpButton;
-@end

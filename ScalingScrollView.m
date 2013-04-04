@@ -1,7 +1,9 @@
+
 /*
      File: ScalingScrollView.m
- Abstract: A subclass of NSScrollView that supports content scaling.
-  Version: 1.7.1
+ Abstract: NSScrollView subclass to support scaling content.
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -41,179 +43,50 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
 #import <Cocoa/Cocoa.h>
 #import "ScalingScrollView.h"
 
-/* For genstrings:
-    NSLocalizedStringFromTable(@"10%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"25%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"50%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"75%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"100%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"125%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"150%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"200%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"400%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"800%", @"ZoomValues", @"Zoom popup entry")
-    NSLocalizedStringFromTable(@"1600%", @"ZoomValues", @"Zoom popup entry")
-*/   
-static NSString *_NSDefaultScaleMenuLabels[] = {/* @"Set...", */ @"10%", @"25%", @"50%", @"75%", @"100%", @"125%", @"150%", @"200%", @"400%", @"800%", @"1600%"};
-static const CGFloat _NSDefaultScaleMenuFactors[] = {/* 0.0, */ 0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 4.0, 8.0, 16.0};
-static NSUInteger _NSDefaultScaleMenuSelectedItemIndex = 4;
-static const CGFloat _NSScaleMenuFontSize = 10.0;
-
 @implementation ScalingScrollView
 
-- (id)initWithFrame:(NSRect)rect {
-    if ((self = [super initWithFrame:rect])) {
-        scaleFactor = 1.0;
-    }
-    return self;
-}
-
-- (void)makeScalePopUpButton {
-    if (_scalePopUpButton == nil) {
-        NSUInteger cnt, numberOfDefaultItems = (sizeof(_NSDefaultScaleMenuLabels) / sizeof(NSString *));
-        id curItem;
-
-        // create it
-        _scalePopUpButton = [[NSPopUpButton allocWithZone:[self zone]] initWithFrame:NSMakeRect(0.0, 0.0, 1.0, 1.0) pullsDown:NO];
-        [(NSPopUpButtonCell *)[_scalePopUpButton cell] setBezelStyle:NSShadowlessSquareBezelStyle];
-        [[_scalePopUpButton cell] setArrowPosition:NSPopUpArrowAtBottom];
-        
-        // fill it
-        for (cnt = 0; cnt < numberOfDefaultItems; cnt++) {
-            [_scalePopUpButton addItemWithTitle:NSLocalizedStringFromTable(_NSDefaultScaleMenuLabels[cnt], @"ZoomValues", nil)];
-            curItem = [_scalePopUpButton itemAtIndex:cnt];
-            if (_NSDefaultScaleMenuFactors[cnt] != 0.0) {
-                [curItem setRepresentedObject:[NSNumber numberWithDouble:_NSDefaultScaleMenuFactors[cnt]]];
-            }
-        }
-        [_scalePopUpButton selectItemAtIndex:_NSDefaultScaleMenuSelectedItemIndex];
-
-        // hook it up
-        [_scalePopUpButton setTarget:self];
-        [_scalePopUpButton setAction:@selector(scalePopUpAction:)];
-
-        // set a suitable font
-        [_scalePopUpButton setFont:[NSFont toolTipsFontOfSize:_NSScaleMenuFontSize]];
-
-        // Make sure the popup is big enough to fit the cells.
-        [_scalePopUpButton sizeToFit];
-
-	// don't let it become first responder
-	[_scalePopUpButton setRefusesFirstResponder:YES];
-
-        // put it in the scrollview
-        [self addSubview:_scalePopUpButton];
-        [_scalePopUpButton release];
-    }
-}
-
-- (void)tile {
-    // Let the superclass do most of the work.
-    [super tile];
-
-    if (![self hasHorizontalScroller]) {
-        if (_scalePopUpButton) [_scalePopUpButton removeFromSuperview];
-        _scalePopUpButton = nil;
-    } else {
-	NSScroller *horizScroller;
-	NSRect horizScrollerFrame, buttonFrame = NSZeroRect;
-        id documentView = [self documentView];
-	BOOL showsPopup = (([documentView respondsToSelector:@selector(showsScalePopUpButton)] && [documentView showsScalePopUpButton]) ? YES : NO);
-
-        if (showsPopup) {
-            if (!_scalePopUpButton) [self makeScalePopUpButton];
-            buttonFrame = [_scalePopUpButton frame];
-        } else {
-            [_scalePopUpButton removeFromSuperview];
-            _scalePopUpButton = nil;
-        }
-
-        horizScroller = [self horizontalScroller];
-        horizScrollerFrame = [horizScroller frame];
-
-        // Now we'll just adjust the horizontal scroller size and set the button size and location.
-        horizScrollerFrame.size.width = horizScrollerFrame.size.width - buttonFrame.size.width;
-        [horizScroller setFrameSize:horizScrollerFrame.size];
-
-        if (showsPopup) {
-            buttonFrame.origin.x = NSMaxX(horizScrollerFrame);
-            buttonFrame.size.height = horizScrollerFrame.size.height + 1.0;
-            buttonFrame.origin.y = [self bounds].size.height - buttonFrame.size.height + 1.0;
-            [_scalePopUpButton setFrame:buttonFrame];
-        }            
-    }
-}
-
-- (void)drawRect:(NSRect)rect {
-    NSRect verticalLineRect;
-    
-    [super drawRect:rect];
-
-    if ([_scalePopUpButton superview]) {
-        verticalLineRect = [_scalePopUpButton frame];
-        verticalLineRect.origin.x -= 1.0;
-        verticalLineRect.size.width = 1.0;
-        if (NSIntersectsRect(rect, verticalLineRect)) {
-            [[NSColor blackColor] set];
-            NSRectFill(verticalLineRect);
-        }
-    }
-}
-
-- (IBAction)scalePopUpAction:(id)sender {
-    NSNumber *selectedFactorObject = [[sender selectedCell] representedObject];
-    
-    if (selectedFactorObject == nil) {
-        NSLog(@"Scale popup action: setting arbitrary zoom factors is not yet supported.");
-        return;
-    } else {
-        [self setScaleFactor:[selectedFactorObject doubleValue] adjustPopup:NO];
-    }
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    [self setAllowsMagnification:YES];
+    [self setMaxMagnification:16.0];
+    [self setMinMagnification:0.25];
 }
 
 - (CGFloat)scaleFactor {
-    return scaleFactor;
+    return [self magnification];
 }
 
 - (void)setScaleFactor:(CGFloat)newScaleFactor {
-    if (scaleFactor != newScaleFactor) {
-	scaleFactor = newScaleFactor;
-
-	NSView *clipView = [[self documentView] superview];
-	
-	// Get the frame.  The frame must stay the same.
-	NSSize curDocFrameSize = [clipView frame].size;
-	
-	// The new bounds will be frame divided by scale factor
-	NSSize newDocBoundsSize = {curDocFrameSize.width / scaleFactor, curDocFrameSize.height / scaleFactor};
-	
-	[clipView setBoundsSize:newDocBoundsSize];
-    }
+    [self setMagnification:newScaleFactor];
 }
 
 - (void)setScaleFactor:(CGFloat)newScaleFactor adjustPopup:(BOOL)flag {
-    if (flag) {	// Coming from elsewhere, first validate it
-	NSUInteger cnt = 0, numberOfDefaultItems = (sizeof(_NSDefaultScaleMenuFactors) / sizeof(CGFloat));
-
-	// We only work with some preset zoom values, so choose one of the appropriate values (Fudge a little for floating point == to work)
-	while (cnt < numberOfDefaultItems && newScaleFactor * .99 > _NSDefaultScaleMenuFactors[cnt]) cnt++;
-	if (cnt == numberOfDefaultItems) cnt--;
-	[_scalePopUpButton selectItemAtIndex:cnt];
-	newScaleFactor = _NSDefaultScaleMenuFactors[cnt];
-    }
     [self setScaleFactor:newScaleFactor];
 }
 
-- (void)setHasHorizontalScroller:(BOOL)flag {
-    if (!flag) [self setScaleFactor:1.0 adjustPopup:NO];
-    [super setHasHorizontalScroller:flag];
+/* Action methods
+*/
+- (IBAction)zoomToActualSize:(id)sender {
+    [[self animator] setMagnification:1.0];
+}
+
+- (IBAction)zoomIn:(id)sender {
+    CGFloat scaleFactor = [self scaleFactor];
+    scaleFactor = (scaleFactor > 0.4 && scaleFactor < 0.6) ? 1.0 : scaleFactor * 2.0;
+    [[self animator] setMagnification:scaleFactor];
+}
+
+- (IBAction)zoomOut:(id)sender {
+    CGFloat scaleFactor = [self scaleFactor];
+    scaleFactor = (scaleFactor > 1.8 && scaleFactor < 2.2) ? 1.0 : scaleFactor / 2.0;
+    [[self animator] setMagnification:scaleFactor];
 }
 
 /* Reassure AppKit that ScalingScrollView supports live resize content preservation, even though it's a subclass that could have modified NSScrollView in such a way as to make NSScrollView's live resize content preservation support inoperative. By default this is disabled for NSScrollView subclasses.
@@ -221,6 +94,5 @@ static const CGFloat _NSScaleMenuFontSize = 10.0;
 - (BOOL)preservesContentDuringLiveResize {
     return [self drawsBackground];
 }
-
 
 @end

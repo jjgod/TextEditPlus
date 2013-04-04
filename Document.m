@@ -1,7 +1,9 @@
+
 /*
      File: Document.m
- Abstract: Document object for TextEdit, a subclass of NSDocument.
-  Version: 1.7.1
+ Abstract: Document object for TextEdit. 
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -41,9 +43,11 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
+
+
 
 #import <Cocoa/Cocoa.h>
 #import "EncodingManager.h"
@@ -82,11 +86,11 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     static dispatch_once_t pred;
     dispatch_once(&pred, ^{
         topologicallySortedReadableTypes = [self readableTypes];
-        topologicallySortedReadableTypes = [topologicallySortedReadableTypes sortedArrayUsingComparator:^(id type1, id type2) {
-            if (type1 == type2) return (NSComparisonResult)NSOrderedSame;
-            if (UTTypeConformsTo((CFStringRef)type1, (CFStringRef)type2)) return (NSComparisonResult)NSOrderedAscending;
-            if (UTTypeConformsTo((CFStringRef)type2, (CFStringRef)type1)) return (NSComparisonResult)NSOrderedDescending;
-            return ((NSUInteger)type1 < (NSUInteger)type2) ? (NSComparisonResult)NSOrderedAscending : (NSComparisonResult)NSOrderedDescending;
+        topologicallySortedReadableTypes = [topologicallySortedReadableTypes sortedArrayUsingComparator:^NSComparisonResult(id type1, id type2) {
+            if (type1 == type2) return NSOrderedSame;
+            if (UTTypeConformsTo((CFStringRef)type1, (CFStringRef)type2)) return NSOrderedAscending;
+            if (UTTypeConformsTo((CFStringRef)type2, (CFStringRef)type1)) return NSOrderedDescending;
+            return (((NSUInteger)type1 < (NSUInteger)type2) ? NSOrderedAscending : NSOrderedDescending);
         }];
         [topologicallySortedReadableTypes retain];
     });
@@ -107,17 +111,19 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[self setEncodingForSaving:NoStringEncoding];
 	[self setScaleFactor:1.0];
 	[self setDocumentPropertiesToDefaults];
-    inDuplicate = NO;
-    saveOperationTypeLock = [[NSLock alloc] init];
-    
-    // Assume the default file type for now, since -initWithType:error: does not currently get called when creating documents using AppleScript. (4165700)
-    [self setFileType:[[NSDocumentController sharedDocumentController] defaultType]];
+	inDuplicate = NO;
+	saveOperationTypeLock = [[NSLock alloc] init];
+        
+	// Assume the default file type for now, since -initWithType:error: does not currently get called when creating documents using AppleScript. (4165700)
+	[self setFileType:[[NSDocumentController sharedDocumentController] defaultType]];
 
-    [self setPrintInfo:[self printInfo]];
+	[self setPrintInfo:[self printInfo]];
 
-    hasMultiplePages = [[NSUserDefaults standardUserDefaults] boolForKey:ShowPageBreaks];
+	hasMultiplePages = [[NSUserDefaults standardUserDefaults] boolForKey:ShowPageBreaks];
 
-    [[self undoManager] enableUndoRegistration];
+	[self setUsesScreenFonts:[self isRichText] ? [[NSUserDefaults standardUserDefaults] boolForKey:UseScreenFonts] : YES];
+
+	[[self undoManager] enableUndoRegistration];
     }
     return self;
 }
@@ -167,16 +173,13 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [[self undoManager] disableUndoRegistration];
     
     [options setObject:absoluteURL forKey:NSBaseURLDocumentOption];
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    if (encoding == NoStringEncoding &&
-        ([workspace type:typeName conformsToType:(NSString *)kUTTypePlainText]))
-        encoding = [[EncodingManager sharedInstance] detectedEncodingForURL: absoluteURL];
     if (encoding != NoStringEncoding) {
         [options setObject:[NSNumber numberWithUnsignedInteger:encoding] forKey:NSCharacterEncodingDocumentOption];
     }
     [self setEncoding:encoding];
     
     // Check type to see if we should load the document as plain. Note that this check isn't always conclusive, which is why we do another check below, after the document has been loaded (and correctly categorized).
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     if ((ignoreRTF && ([workspace type:typeName conformsToType:(NSString *)kUTTypeRTF] || [workspace type:typeName conformsToType:Word2003XMLType])) || (ignoreHTML && [workspace type:typeName conformsToType:(NSString *)kUTTypeHTML]) || [self isOpenedIgnoringRichText]) {
         [options setObject:NSPlainTextDocumentType forKey:NSDocumentTypeDocumentOption]; // Force plain
         typeName = (NSString *)kUTTypeText;
@@ -296,7 +299,9 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [self setReadOnly:((val = [docAttrs objectForKey:NSReadOnlyDocumentAttribute]) && ([val integerValue] > 0))];
     
     [self setOriginalOrientationSections:[docAttrs objectForKey:NSTextLayoutSectionsAttribute]];
-    
+
+    [self setUsesScreenFonts:[self isRichText] ? [[docAttrs objectForKey:NSUsesScreenFontsDocumentAttribute] boolValue] : YES];
+
     [[self undoManager] enableUndoRegistration];
     
     return YES;
@@ -324,9 +329,14 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[textAttributes setObject:defaultRichParaStyle forKey:NSParagraphStyleAttributeName];
     } else {
 	NSFont *plainFont = [NSFont userFixedPitchFontOfSize:0.0];
+        NSFont *charWidthFont = plainFont;
 	NSInteger tabWidth = [[NSUserDefaults standardUserDefaults] integerForKey:TabWidth];
-	CGFloat charWidth = [@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:plainFont forKey:NSFontAttributeName]].width;
-        if (charWidth == 0) charWidth = [[plainFont screenFontWithRenderingMode:NSFontDefaultRenderingMode] maximumAdvancement].width;
+	CGFloat charWidth;
+
+        if ([self usesScreenFonts]) charWidthFont = [plainFont screenFontWithRenderingMode:NSFontDefaultRenderingMode];
+
+        charWidth = [@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:charWidthFont forKey:NSFontAttributeName]].width;
+        if (charWidth == 0) charWidth = [charWidthFont maximumAdvancement].width;
 	
 	// Now use a default paragraph style, but with the tab width adjusted
 	NSMutableParagraphStyle *mStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
@@ -453,6 +463,15 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 
 - (NSArray *)originalOrientationSections {
     return originalOrientationSections; 
+}
+
+/* Screen fonts property */
+- (void)setUsesScreenFonts:(BOOL)aFlag {
+    usesScreenFonts = aFlag;
+}
+
+- (BOOL)usesScreenFonts {
+    return usesScreenFonts;
 }
 
 /* Hyphenation related methods.
@@ -843,6 +862,7 @@ CGFloat defaultTextPadding(void) {
 	// Rich-text documents cannot be saved as plain text.
 	if ([self isRichText]) {
 	    [outArray removeObject:(NSString *)kUTTypeText];
+	    [outArray removeObject:(NSString *)kUTTypePlainText];
 	}
 	
 	// Documents that contain attachments can only be saved in formats that support embedded graphics.
@@ -1011,11 +1031,22 @@ In addition we overwrite this method as a way to tell that the document has been
             };
             NSWindow *sheetWindow = [self windowForSheet];
             if (sheetWindow) {
+                [self performActivityWithSynchronousWaiting:YES usingBlock:^(void (^activityCompletionHandler)()) {
                 [self presentError:error
                         modalForWindow:sheetWindow
                         delegate:self
                         didPresentSelector:@selector(didPresentErrorWithRecovery:block:)
-                        contextInfo:Block_copy(didRecoverBlock)];
+                           contextInfo:Block_copy(^(BOOL didRecover) {
+                               if (!didRecover) {
+                                   if (change == NSChangeDone || change == NSChangeRedone) {
+                                       [[self undoManager] undo];
+                                   } else if (change == NSChangeUndone) {
+                                       [[self undoManager] redo];
+                                   }
+                               }
+                               activityCompletionHandler();
+                           })];
+                }];
             } else {
                 didRecoverBlock([self presentError:error]);
             }
@@ -1045,10 +1076,12 @@ In addition we overwrite this method as a way to tell that the document has been
 
 - (void)document:(NSDocument *)ignored didSave:(BOOL)didSave block:(void (^)(BOOL))block {
     block(didSave);
+    Block_release(block);
 }
 
 - (void)didPresentErrorWithRecovery:(BOOL)didRecover block:(void (^)(BOOL))block {
     block(didRecover);
+    Block_release(block);
 }
 
 - (void)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex delegate:(id)delegate didRecoverSelector:(SEL)didRecoverSelector contextInfo:(void *)contextInfo {
@@ -1095,6 +1128,7 @@ In addition we overwrite this method as a way to tell that the document has been
             case TextEditSaveErrorEncodingInapplicable:
                 if (recoveryOptionIndex == 0) { // OK button
                     [delegate retain];
+                    [self continueActivityUsingBlock:^(void) {
                     [self runModalSavePanelForSaveOperation:NSSaveOperation
                         delegate:self
                         didSaveSelector:@selector(document:didSave:block:)
@@ -1102,6 +1136,7 @@ In addition we overwrite this method as a way to tell that the document has been
                             [delegate release];
                             ((void (*)(id, SEL, BOOL, void *))objc_msgSend)(delegate, didRecoverSelector, didSave, contextInfo);
                         })];
+                    }];
                     return;
                 }
                 break;
@@ -1127,6 +1162,7 @@ In addition we overwrite this method as a way to tell that the document has been
 	[NSNumber numberWithDouble:[[self printInfo] bottomMargin]], NSBottomMarginDocumentAttribute, 
 	[NSNumber numberWithDouble:[[self printInfo] topMargin]], NSTopMarginDocumentAttribute, 
 	[NSNumber numberWithInteger:[self hasMultiplePages] ? 1 : 0], NSViewModeDocumentAttribute,
+	[NSNumber numberWithBool:[self usesScreenFonts]], NSUsesScreenFontsDocumentAttribute,
 	nil];
     NSString *docType = nil;
     id val = nil; // temporary values

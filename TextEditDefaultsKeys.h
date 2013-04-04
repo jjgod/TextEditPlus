@@ -1,8 +1,9 @@
+
 /*
      File: TextEditDefaultsKeys.h
- Abstract: Keys used in TextEdit preferences.
- Note that not all keys in this file are exposed in the UI. Some of them are not used at all, but are kept for reference.
-  Version: 1.7.1
+ Abstract: Keys used for preferences.
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -42,10 +43,11 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
+// Note that not all keys in this file are exposed in the UI. Some of them are not used at all, but are kept for reference.
 #define RichText @"RichText"
 #define ShowPageBreaks @"ShowPageBreaks"
 #define AddExtensionToNewPlainTextFiles @"AddExtensionToNewPlainTextFiles"
@@ -78,6 +80,7 @@
 #define AutosavingDelay @"AutosavingDelay"
 #define NumberPagesWhenPrinting @"NumberPagesWhenPrinting"
 #define WrapToFitWhenPrinting @"WrapToFitWhenPrinting"
+#define UseScreenFonts @"UseScreenFonts"
 
 // Use different convention for the key values here, to be consistent with the keys in Document
 #define AuthorProperty @"author"

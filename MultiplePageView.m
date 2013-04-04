@@ -1,7 +1,9 @@
+
 /*
      File: MultiplePageView.m
  Abstract: View which holds all the pages together in the multiple-page case.
-  Version: 1.7.1
+ 
+  Version: 1.8
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -41,7 +43,7 @@
  STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  
- Copyright (C) 2012 Apple Inc. All Rights Reserved.
+ Copyright (C) 2013 Apple Inc. All Rights Reserved.
  
  */
 
@@ -150,6 +152,22 @@
     return rect;
 }
 
+/* For locations on the page separator right after a page, returns that page number.  Same for any locations on the empty (gray background) area to the side of a page. Will return 0 or numPages-1 for locations beyond the ends. Results are 0-based.
+*/
+- (NSUInteger)pageNumberForPoint:(NSPoint)loc {
+    NSUInteger pageNumber;
+    if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
+        if (loc.y < 0) pageNumber = 0;
+        else if (loc.y >= [self bounds].size.height) pageNumber = numPages - 1;
+        else pageNumber = loc.y / ([printInfo paperSize].height + [self pageSeparatorHeight]);
+    } else {
+        if (loc.x < 0) pageNumber = numPages - 1;
+        else if (loc.x >= [self bounds].size.width) pageNumber = 0;
+        else pageNumber = (NSWidth([self bounds]) - loc.x) / ([printInfo paperSize].width + [self pageSeparatorHeight]);
+    }
+    return pageNumber;    
+}
+
 - (void)setLineColor:(NSColor *)color {
     if (color != lineColor) {
         [lineColor autorelease];
@@ -212,20 +230,47 @@
         }
 
         if ([[self superview] isKindOfClass:[NSClipView class]]) {
-	    NSColor *backgroundColor = [(NSClipView *)[self superview] backgroundColor];
+            NSColor *backgroundColor = [(NSClipView *)[self superview] backgroundColor];
             [backgroundColor set];
             for (cnt = firstPage; cnt <= lastPage; cnt++) {
-		NSRect pageRect = [self pageRectForPageNumber:cnt];
+                NSRect pageRect = [self pageRectForPageNumber:cnt];
                 NSRect separatorRect;
                 if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
                     separatorRect = NSMakeRect(NSMinX(pageRect), NSMaxY(pageRect), NSWidth(pageRect), [self pageSeparatorHeight]);
                 } else {
                     separatorRect = NSMakeRect(NSMaxX(pageRect), NSMinY(pageRect), [self pageSeparatorHeight], NSHeight(pageRect));
                 }
-		NSRectFill (separatorRect);
+                NSRectFill (separatorRect);
             }
         }
     }
+}
+
+/**** Smart magnification ****/
+
+- (NSRect)rectForSmartMagnificationAtPoint:(NSPoint)location inRect:(NSRect)visibleRect {    
+    NSRect result;
+    NSUInteger pageNumber = [self pageNumberForPoint:location];
+    NSRect documentRect = NSInsetRect([self documentRectForPageNumber:pageNumber], -3.0, -3.0);  // We use -3 to show a bit of the margins
+    NSRect pageRect = [self pageRectForPageNumber:pageNumber];
+    
+    if (NSPointInRect(location, documentRect)) {        // Smart magnify on page contents; return the page contents rect
+        result = documentRect;
+    } else if (NSPointInRect(location, pageRect)) {     // Smart magnify on page margins; return the page rect (not including separator area)
+        result = pageRect;
+    } else {        // Smart magnify between pages, or the empty area beyond the side or bottom/top of the page; return the extended area for the page
+        result = pageRect;
+        if (NSTextLayoutOrientationHorizontal == layoutOrientation) {
+            if (NSMaxX(visibleRect) > NSMaxX(pageRect)) result.size.width = NSMaxX(visibleRect);        // include area to the right of the paper
+            if (pageNumber + 1 < numPages) result.size.height += [self pageSeparatorHeight];
+            if (location.y > NSMaxY(result)) result.size.height = ceil(location.y - result.origin.y);   // extend the rect out to include location
+        } else {
+            if (NSMaxY(visibleRect) > NSMaxY(pageRect)) result.size.height = NSMaxY(visibleRect);       // include area below the paper
+            if (pageNumber + 1 < numPages) result.size.width += [self pageSeparatorHeight];
+            if (location.x > NSMaxX(result)) result.size.width = ceil(location.x - result.origin.x);    // extend the rect out to include location
+        }
+    }
+    return result;
 }
 
 /**** Printing support... ****/
@@ -245,8 +290,6 @@
     NSSize paperSize = [printInfo paperSize];
     return NSMakePoint((paperSize.width - rect.size.width) / 2.0, (paperSize.height - rect.size.height) / 2.0);
 }
-
-- (BOOL)showsScalePopUpButton { return YES; }
 
 @end
 
