@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0744194F150CD92F0073CF14 /* UniversalDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 0744194E150CD92F0073CF14 /* UniversalDetector.h */; };
+		07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83A13D8C5A9004E932B /* JJTypesetter.h */; };
+		07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C9E83B13D8C5A9004E932B /* JJTypesetter.m */; };
+		07DDC829170DC8E700D42337 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 07DDC828170DC8E700D42337 /* libstdc++.dylib */; };
+		07DDC82A170DC95900D42337 /* libUniversalDetector.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07441950150CD9510073CF14 /* libUniversalDetector.a */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
 		176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 176A30470E23EB0600857A3B /* FontNameTransformer.m */; };
 		176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */; };
@@ -67,6 +72,11 @@
 		0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		0230D2BFFF2F85EF11CA0C5D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		0744194E150CD92F0073CF14 /* UniversalDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UniversalDetector.h; sourceTree = "<group>"; };
+		07441950150CD9510073CF14 /* libUniversalDetector.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUniversalDetector.a; sourceTree = "<group>"; };
+		07C9E83A13D8C5A9004E932B /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
+		07C9E83B13D8C5A9004E932B /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
+		07DDC828170DC8E700D42337 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
 		176A30470E23EB0600857A3B /* FontNameTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FontNameTransformer.m; sourceTree = "<group>"; };
 		176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditDefaultsKeys.h; sourceTree = "<group>"; };
@@ -130,6 +140,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07DDC82A170DC95900D42337 /* libUniversalDetector.a in Frameworks */,
+				07DDC829170DC8E700D42337 /* libstdc++.dylib in Frameworks */,
 				415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -157,6 +169,10 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
+				07DDC828170DC8E700D42337 /* libstdc++.dylib */,
+				0744194E150CD92F0073CF14 /* UniversalDetector.h */,
+				07C9E83A13D8C5A9004E932B /* JJTypesetter.h */,
+				07C9E83B13D8C5A9004E932B /* JJTypesetter.m */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
 				6FE20903FE93D5F211CA2CEA /* Document.h */,
 				6FE208FBFE93D5F211CA2CEA /* Document.m */,
@@ -254,6 +270,7 @@
 		6FE20939FE93D5F211CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				07441950150CD9510073CF14 /* libUniversalDetector.a */,
 				0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */,
 				0230D2BEFF2F85A411CA0C5D /* References (Non-linked frameworks) */,
 			);
@@ -283,6 +300,8 @@
 				176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */,
 				176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */,
 				4116BCFE1317428900C7C8C1 /* PrintingTextView.h in Headers */,
+				07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */,
+				0744194F150CD92F0073CF14 /* UniversalDetector.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,6 +429,7 @@
 				413912170BD54AB800760A3D /* DocumentPropertiesPanelController.m in Sources */,
 				176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */,
 				4116BCFF1317428900C7C8C1 /* PrintingTextView.m in Sources */,
+				07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,7 +560,10 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				MACOSX_DEPLOYMENT_TARGET = "";
 				OTHER_CFLAGS = "$(cflags)";
 				OTHER_LDFLAGS = "";
@@ -579,7 +602,10 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				MACOSX_DEPLOYMENT_TARGET = "";
 				OTHER_CFLAGS = "$(cflags)";
 				OTHER_LDFLAGS = "";

@@ -173,13 +173,16 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [[self undoManager] disableUndoRegistration];
     
     [options setObject:absoluteURL forKey:NSBaseURLDocumentOption];
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+    if (encoding == NoStringEncoding &&
+        ([workspace type:typeName conformsToType:(NSString *)kUTTypePlainText]))
+        encoding = [[EncodingManager sharedInstance] detectedEncodingForURL:absoluteURL];
     if (encoding != NoStringEncoding) {
         [options setObject:[NSNumber numberWithUnsignedInteger:encoding] forKey:NSCharacterEncodingDocumentOption];
     }
     [self setEncoding:encoding];
     
     // Check type to see if we should load the document as plain. Note that this check isn't always conclusive, which is why we do another check below, after the document has been loaded (and correctly categorized).
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     if ((ignoreRTF && ([workspace type:typeName conformsToType:(NSString *)kUTTypeRTF] || [workspace type:typeName conformsToType:Word2003XMLType])) || (ignoreHTML && [workspace type:typeName conformsToType:(NSString *)kUTTypeHTML]) || [self isOpenedIgnoringRichText]) {
         [options setObject:NSPlainTextDocumentType forKey:NSDocumentTypeDocumentOption]; // Force plain
         typeName = (NSString *)kUTTypeText;
