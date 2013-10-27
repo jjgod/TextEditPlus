@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0744194F150CD92F0073CF14 /* UniversalDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 0744194E150CD92F0073CF14 /* UniversalDetector.h */; };
+		071673DD18245550000DFE31 /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 071673DC18245550000DFE31 /* UniversalDetector.framework */; };
+		071673DF1824566B000DFE31 /* UniversalDetector.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 071673DC18245550000DFE31 /* UniversalDetector.framework */; };
 		07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83A13D8C5A9004E932B /* JJTypesetter.h */; };
 		07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C9E83B13D8C5A9004E932B /* JJTypesetter.m */; };
-		07DDC829170DC8E700D42337 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 07DDC828170DC8E700D42337 /* libstdc++.dylib */; };
-		07DDC82A170DC95900D42337 /* libUniversalDetector.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07441950150CD9510073CF14 /* libUniversalDetector.a */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
 		176A30490E23EB0600857A3B /* FontNameTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 176A30470E23EB0600857A3B /* FontNameTransformer.m */; };
 		176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */; };
@@ -30,17 +29,11 @@
 		415B215F07BC0732009CEA53 /* ScalingScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6FE20907FE93D5F211CA2CEA /* ScalingScrollView.h */; };
 		415B216007BC0732009CEA53 /* Preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 6FE20908FE93D5F211CA2CEA /* Preferences.h */; };
 		415B216107BC0732009CEA53 /* EncodingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 92A68B0A02972957007F9DE6 /* EncodingManager.h */; };
-		415B216307BC0732009CEA53 /* EncodingAccessory.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6FE2090CFE93D5F211CA2CEA /* EncodingAccessory.nib */; };
 		415B216407BC0732009CEA53 /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20910FE93D5F211CA2CEA /* Preferences.nib */; };
 		415B216507BC0732009CEA53 /* Edit.nib in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20912FE93D5F211CA2CEA /* Edit.nib */; };
-		415B216607BC0732009CEA53 /* txt.icns in Resources */ = {isa = PBXBuildFile; fileRef = 6FE2091CFE93D5F211CA2CEA /* txt.icns */; };
 		415B216707BC0732009CEA53 /* ZoomValues.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6FE2091DFE93D5F211CA2CEA /* ZoomValues.strings */; };
-		415B216807BC0732009CEA53 /* Edit.icns in Resources */ = {isa = PBXBuildFile; fileRef = 6FE2091FFE93D5F211CA2CEA /* Edit.icns */; };
-		415B216907BC0732009CEA53 /* rtf.icns in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20922FE93D5F211CA2CEA /* rtf.icns */; };
 		415B216A07BC0732009CEA53 /* TextEdit.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20924FE93D5F211CA2CEA /* TextEdit.scriptTerminology */; };
-		415B216B07BC0732009CEA53 /* rtfd.icns in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20925FE93D5F211CA2CEA /* rtfd.icns */; };
 		415B216C07BC0732009CEA53 /* TextEdit.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20926FE93D5F211CA2CEA /* TextEdit.scriptSuite */; };
-		415B216D07BC0732009CEA53 /* html.icns in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20927FE93D5F211CA2CEA /* html.icns */; };
 		415B216E07BC0732009CEA53 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6FE20928FE93D5F211CA2CEA /* Localizable.strings */; };
 		415B217007BC0732009CEA53 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 01AA5997FF66FE3311CA0C5D /* InfoPlist.strings */; };
 		415B217207BC0732009CEA53 /* DocumentWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = F549503200E2A3BB01CA0CA4 /* DocumentWindow.nib */; };
@@ -56,8 +49,14 @@
 		415B217F07BC0732009CEA53 /* Edit_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE2090AFE93D5F211CA2CEA /* Edit_main.m */; settings = {ATTRIBUTES = (); }; };
 		415B218007BC0732009CEA53 /* EncodingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A68B0B02972957007F9DE6 /* EncodingManager.m */; };
 		415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */; };
-		417C5C210B962CDF008C4735 /* PrintPanelAccessory.strings in Resources */ = {isa = PBXBuildFile; fileRef = 417C5C1F0B962CDF008C4735 /* PrintPanelAccessory.strings */; };
+		418A618516DECC0D00D80703 /* PrintAccessory.strings in Resources */ = {isa = PBXBuildFile; fileRef = 418A618316DECC0D00D80703 /* PrintAccessory.strings */; };
 		419167BC0B78226D00B4CA33 /* SelectLinePanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 419167BA0B78226C00B4CA33 /* SelectLinePanel.nib */; };
+		41BFB8E91697ABFB00CD8A52 /* Edit.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 41BFB8E41697ABFB00CD8A52 /* Edit.iconset */; };
+		41BFB8EA1697ABFB00CD8A52 /* html.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 41BFB8E51697ABFB00CD8A52 /* html.iconset */; };
+		41BFB8EB1697ABFB00CD8A52 /* rtf.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 41BFB8E61697ABFB00CD8A52 /* rtf.iconset */; };
+		41BFB8EC1697ABFB00CD8A52 /* rtfd.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 41BFB8E71697ABFB00CD8A52 /* rtfd.iconset */; };
+		41BFB8ED1697ABFB00CD8A52 /* txt.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 41BFB8E81697ABFB00CD8A52 /* txt.iconset */; };
+		41CDED101747190A002F6E28 /* EncodingAccessory.nib in Resources */ = {isa = PBXBuildFile; fileRef = 41CDED0E1747190A002F6E28 /* EncodingAccessory.nib */; };
 		41FA793A0B95E61A00FA84AA /* PrintPanelAccessoryController.h in Headers */ = {isa = PBXBuildFile; fileRef = 41FA79380B95E61A00FA84AA /* PrintPanelAccessoryController.h */; };
 		41FA793B0B95E61A00FA84AA /* PrintPanelAccessoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 41FA79390B95E61A00FA84AA /* PrintPanelAccessoryController.m */; };
 		41FA79A10B95F0F300FA84AA /* PrintPanelAccessory.nib in Resources */ = {isa = PBXBuildFile; fileRef = 41FA799F0B95F0F300FA84AA /* PrintPanelAccessory.nib */; };
@@ -67,16 +66,27 @@
 		FBF176CB084E77CE005F6CEB /* DocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF176C9084E77CE005F6CEB /* DocumentController.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		071673DE1824565C000DFE31 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				071673DF1824566B000DFE31 /* UniversalDetector.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		01AA5998FF66FE3311CA0C5D /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		01AA5998FF66FE3311CA0C5D /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		0230D2BFFF2F85EF11CA0C5D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		0744194E150CD92F0073CF14 /* UniversalDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UniversalDetector.h; sourceTree = "<group>"; };
-		07441950150CD9510073CF14 /* libUniversalDetector.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libUniversalDetector.a; sourceTree = "<group>"; };
+		071673DC18245550000DFE31 /* UniversalDetector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UniversalDetector.framework; sourceTree = "<group>"; };
 		07C9E83A13D8C5A9004E932B /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
 		07C9E83B13D8C5A9004E932B /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
-		07DDC828170DC8E700D42337 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
 		176A30470E23EB0600857A3B /* FontNameTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FontNameTransformer.m; sourceTree = "<group>"; };
 		176A304C0E23EB6B00857A3B /* TextEditDefaultsKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditDefaultsKeys.h; sourceTree = "<group>"; };
@@ -84,21 +94,30 @@
 		411131D90D4FA70D00AF3A0E /* TextEditMisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextEditMisc.h; sourceTree = "<group>"; };
 		4116BCFC1317428900C7C8C1 /* PrintingTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrintingTextView.h; sourceTree = "<group>"; };
 		4116BCFD1317428900C7C8C1 /* PrintingTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrintingTextView.m; sourceTree = "<group>"; };
-		41249AD603895A6700F1DAE5 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
-		41278ABF06AF663000B5D78D /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/DocumentProperties.nib; sourceTree = "<group>"; };
+		41249AD603895A6700F1DAE5 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
 		412CFBD30B62AC8A00A46D76 /* LinePanelController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinePanelController.h; sourceTree = "<group>"; };
 		412CFBD40B62AC8A00A46D76 /* LinePanelController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LinePanelController.m; sourceTree = "<group>"; };
 		413912140BD54AB700760A3D /* DocumentPropertiesPanelController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DocumentPropertiesPanelController.h; sourceTree = "<group>"; };
 		413912150BD54AB700760A3D /* DocumentPropertiesPanelController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DocumentPropertiesPanelController.m; sourceTree = "<group>"; };
-		413A189B0B6433EF00B26CF9 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/LinePanel.strings; sourceTree = "<group>"; };
+		413A189B0B6433EF00B26CF9 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/LinePanel.strings; sourceTree = "<group>"; };
 		415B218507BC0732009CEA53 /* Info-TextEdit.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-TextEdit.plist"; sourceTree = "<group>"; };
 		415B218607BC0732009CEA53 /* TextEdit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextEdit.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		417C5C200B962CDF008C4735 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/PrintPanelAccessory.strings; sourceTree = "<group>"; };
+		418A618416DECC0D00D80703 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/PrintAccessory.strings; sourceTree = "<group>"; };
 		418B04C8062631D5009F55E2 /* TextEdit Test Document.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = "TextEdit Test Document.rtf"; sourceTree = "<group>"; };
-		419167BB0B78226D00B4CA33 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/SelectLinePanel.nib; sourceTree = "<group>"; };
+		41B87F031639EFE7005437AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Base; path = Base.lproj/Edit.nib; sourceTree = "<group>"; };
+		41B87F041639EFE7005437AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Base; path = Base.lproj/Preferences.nib; sourceTree = "<group>"; };
+		41B87F061639EFE7005437AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Base; path = Base.lproj/PrintPanelAccessory.nib; sourceTree = "<group>"; };
+		41B87F071639EFE7005437AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Base; path = Base.lproj/SelectEncodingsPanel.nib; sourceTree = "<group>"; };
+		41B87F081639EFE7005437AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Base; path = Base.lproj/DocumentProperties.nib; sourceTree = "<group>"; };
+		41B87F091639EFE7005437AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Base; path = Base.lproj/SelectLinePanel.nib; sourceTree = "<group>"; };
+		41BFB8E41697ABFB00CD8A52 /* Edit.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = Edit.iconset; sourceTree = "<group>"; };
+		41BFB8E51697ABFB00CD8A52 /* html.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = html.iconset; sourceTree = "<group>"; };
+		41BFB8E61697ABFB00CD8A52 /* rtf.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = rtf.iconset; sourceTree = "<group>"; };
+		41BFB8E71697ABFB00CD8A52 /* rtfd.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = rtfd.iconset; sourceTree = "<group>"; };
+		41BFB8E81697ABFB00CD8A52 /* txt.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = txt.iconset; sourceTree = "<group>"; };
+		41CDED0F1747190A002F6E28 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/EncodingAccessory.nib; sourceTree = "<group>"; };
 		41FA79380B95E61A00FA84AA /* PrintPanelAccessoryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrintPanelAccessoryController.h; sourceTree = "<group>"; };
 		41FA79390B95E61A00FA84AA /* PrintPanelAccessoryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrintPanelAccessoryController.m; sourceTree = "<group>"; };
-		41FA79A00B95F0F300FA84AA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/PrintPanelAccessory.nib; sourceTree = "<group>"; };
 		6FE208FBFE93D5F211CA2CEA /* Document.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Document.m; sourceTree = "<group>"; };
 		6FE208FDFE93D5F211CA2CEA /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Controller.m; sourceTree = "<group>"; };
 		6FE208FEFE93D5F211CA2CEA /* ScalingScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScalingScrollView.m; sourceTree = "<group>"; };
@@ -110,23 +129,14 @@
 		6FE20907FE93D5F211CA2CEA /* ScalingScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScalingScrollView.h; sourceTree = "<group>"; };
 		6FE20908FE93D5F211CA2CEA /* Preferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Preferences.h; sourceTree = "<group>"; };
 		6FE2090AFE93D5F211CA2CEA /* Edit_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Edit_main.m; sourceTree = "<group>"; };
-		6FE2090DFE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/EncodingAccessory.nib; sourceTree = "<group>"; };
-		6FE20911FE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/Preferences.nib; sourceTree = "<group>"; };
-		6FE20914FE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/Edit.nib; sourceTree = "<group>"; };
-		6FE2091CFE93D5F211CA2CEA /* txt.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = txt.icns; sourceTree = "<group>"; };
-		6FE2091EFE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/ZoomValues.strings; sourceTree = "<group>"; };
-		6FE2091FFE93D5F211CA2CEA /* Edit.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Edit.icns; sourceTree = "<group>"; };
-		6FE20922FE93D5F211CA2CEA /* rtf.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = rtf.icns; sourceTree = "<group>"; };
+		6FE2091EFE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/ZoomValues.strings; sourceTree = "<group>"; };
 		6FE20924FE93D5F211CA2CEA /* TextEdit.scriptTerminology */ = {isa = PBXFileReference; lastKnownFileType = text.plist.scriptTerminology; path = TextEdit.scriptTerminology; sourceTree = "<group>"; };
-		6FE20925FE93D5F211CA2CEA /* rtfd.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = rtfd.icns; sourceTree = "<group>"; };
 		6FE20926FE93D5F211CA2CEA /* TextEdit.scriptSuite */ = {isa = PBXFileReference; lastKnownFileType = text.plist.scriptSuite; path = TextEdit.scriptSuite; sourceTree = "<group>"; };
-		6FE20927FE93D5F211CA2CEA /* html.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = html.icns; sourceTree = "<group>"; };
-		6FE20929FE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6FE20929FE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		6FE20936FE93D5F211CA2CEA /* README.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = README.rtf; sourceTree = "<group>"; };
 		6FE20938FE93D5F211CA2CEA /* TextEdit.scatterload */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextEdit.scatterload; sourceTree = "<group>"; };
 		92A68B0A02972957007F9DE6 /* EncodingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodingManager.h; sourceTree = "<group>"; };
 		92A68B0B02972957007F9DE6 /* EncodingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncodingManager.m; sourceTree = "<group>"; };
-		92A68B1802972AB9007F9DE6 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/SelectEncodingsPanel.nib; sourceTree = "<group>"; };
 		EA564B1413C6507000FBCF57 /* Version.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		F549503200E2A3BB01CA0CA4 /* DocumentWindow.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = DocumentWindow.nib; sourceTree = "<group>"; };
 		FB69D01E085E20E300646BBF /* DocumentWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DocumentWindowController.h; sourceTree = "<group>"; };
@@ -140,8 +150,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07DDC82A170DC95900D42337 /* libUniversalDetector.a in Frameworks */,
-				07DDC829170DC8E700D42337 /* libstdc++.dylib in Frameworks */,
+				071673DD18245550000DFE31 /* UniversalDetector.framework in Frameworks */,
 				415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -169,8 +178,6 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
-				07DDC828170DC8E700D42337 /* libstdc++.dylib */,
-				0744194E150CD92F0073CF14 /* UniversalDetector.h */,
 				07C9E83A13D8C5A9004E932B /* JJTypesetter.h */,
 				07C9E83B13D8C5A9004E932B /* JJTypesetter.m */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
@@ -218,10 +225,10 @@
 		6FE2090BFE93D5F211CA2CEA /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				41CDED0E1747190A002F6E28 /* EncodingAccessory.nib */,
 				F549503200E2A3BB01CA0CA4 /* DocumentWindow.nib */,
 				6FE20912FE93D5F211CA2CEA /* Edit.nib */,
 				6FE20910FE93D5F211CA2CEA /* Preferences.nib */,
-				6FE2090CFE93D5F211CA2CEA /* EncodingAccessory.nib */,
 				41FA799F0B95F0F300FA84AA /* PrintPanelAccessory.nib */,
 				92A68B1702972AB9007F9DE6 /* SelectEncodingsPanel.nib */,
 				41278ABE06AF663000B5D78D /* DocumentProperties.nib */,
@@ -233,11 +240,11 @@
 		6FE20917FE93D5F211CA2CEA /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				6FE2091FFE93D5F211CA2CEA /* Edit.icns */,
-				6FE2091CFE93D5F211CA2CEA /* txt.icns */,
-				6FE20922FE93D5F211CA2CEA /* rtf.icns */,
-				6FE20925FE93D5F211CA2CEA /* rtfd.icns */,
-				6FE20927FE93D5F211CA2CEA /* html.icns */,
+				41BFB8E41697ABFB00CD8A52 /* Edit.iconset */,
+				41BFB8E51697ABFB00CD8A52 /* html.iconset */,
+				41BFB8E61697ABFB00CD8A52 /* rtf.iconset */,
+				41BFB8E71697ABFB00CD8A52 /* rtfd.iconset */,
+				41BFB8E81697ABFB00CD8A52 /* txt.iconset */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -250,7 +257,7 @@
 				41249AD503895A6700F1DAE5 /* ServicesMenu.strings */,
 				413A189A0B6433EF00B26CF9 /* LinePanel.strings */,
 				01AA5997FF66FE3311CA0C5D /* InfoPlist.strings */,
-				417C5C1F0B962CDF008C4735 /* PrintPanelAccessory.strings */,
+				418A618316DECC0D00D80703 /* PrintAccessory.strings */,
 				6FE20926FE93D5F211CA2CEA /* TextEdit.scriptSuite */,
 				6FE20924FE93D5F211CA2CEA /* TextEdit.scriptTerminology */,
 				418B04C8062631D5009F55E2 /* TextEdit Test Document.rtf */,
@@ -270,7 +277,7 @@
 		6FE20939FE93D5F211CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				07441950150CD9510073CF14 /* libUniversalDetector.a */,
+				071673DC18245550000DFE31 /* UniversalDetector.framework */,
 				0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */,
 				0230D2BEFF2F85A411CA0C5D /* References (Non-linked frameworks) */,
 			);
@@ -301,7 +308,6 @@
 				176A304D0E23EB6B00857A3B /* TextEditDefaultsKeys.h in Headers */,
 				4116BCFE1317428900C7C8C1 /* PrintingTextView.h in Headers */,
 				07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */,
-				0744194F150CD92F0073CF14 /* UniversalDetector.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,6 +323,7 @@
 				415B217807BC0732009CEA53 /* Sources */,
 				415B218107BC0732009CEA53 /* Frameworks */,
 				415B218307BC0732009CEA53 /* Rez */,
+				071673DE1824565C000DFE31 /* CopyFiles */,
 				415B218407BC0732009CEA53 /* ShellScript */,
 			);
 			buildRules = (
@@ -335,7 +342,7 @@
 		6FE208F8FE93D5F211CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = 41534B9208A2B299002069FE /* Build configuration list for PBXProject "TextEdit" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -346,6 +353,7 @@
 				Japanese,
 				French,
 				German,
+				Base,
 			);
 			mainGroup = 6FE208F9FE93D5F211CA2CEA /* TextEdit */;
 			projectDirPath = "";
@@ -361,28 +369,28 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				415B216307BC0732009CEA53 /* EncodingAccessory.nib in Resources */,
 				415B216407BC0732009CEA53 /* Preferences.nib in Resources */,
 				415B216507BC0732009CEA53 /* Edit.nib in Resources */,
-				415B216607BC0732009CEA53 /* txt.icns in Resources */,
 				415B216707BC0732009CEA53 /* ZoomValues.strings in Resources */,
-				415B216807BC0732009CEA53 /* Edit.icns in Resources */,
-				415B216907BC0732009CEA53 /* rtf.icns in Resources */,
 				415B216A07BC0732009CEA53 /* TextEdit.scriptTerminology in Resources */,
-				415B216B07BC0732009CEA53 /* rtfd.icns in Resources */,
 				415B216C07BC0732009CEA53 /* TextEdit.scriptSuite in Resources */,
-				415B216D07BC0732009CEA53 /* html.icns in Resources */,
+				418A618516DECC0D00D80703 /* PrintAccessory.strings in Resources */,
 				415B216E07BC0732009CEA53 /* Localizable.strings in Resources */,
 				415B217007BC0732009CEA53 /* InfoPlist.strings in Resources */,
 				415B217207BC0732009CEA53 /* DocumentWindow.nib in Resources */,
 				415B217307BC0732009CEA53 /* SelectEncodingsPanel.nib in Resources */,
 				415B217407BC0732009CEA53 /* ServicesMenu.strings in Resources */,
+				41CDED101747190A002F6E28 /* EncodingAccessory.nib in Resources */,
 				415B217607BC0732009CEA53 /* TextEdit Test Document.rtf in Resources */,
 				415B217707BC0732009CEA53 /* DocumentProperties.nib in Resources */,
 				413A189C0B6433EF00B26CF9 /* LinePanel.strings in Resources */,
 				419167BC0B78226D00B4CA33 /* SelectLinePanel.nib in Resources */,
 				41FA79A10B95F0F300FA84AA /* PrintPanelAccessory.nib in Resources */,
-				417C5C210B962CDF008C4735 /* PrintPanelAccessory.strings in Resources */,
+				41BFB8E91697ABFB00CD8A52 /* Edit.iconset in Resources */,
+				41BFB8EA1697ABFB00CD8A52 /* html.iconset in Resources */,
+				41BFB8EB1697ABFB00CD8A52 /* rtf.iconset in Resources */,
+				41BFB8EC1697ABFB00CD8A52 /* rtfd.iconset in Resources */,
+				41BFB8ED1697ABFB00CD8A52 /* txt.iconset in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -455,7 +463,7 @@
 		41278ABE06AF663000B5D78D /* DocumentProperties.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				41278ABF06AF663000B5D78D /* English */,
+				41B87F081639EFE7005437AB /* Base */,
 			);
 			name = DocumentProperties.nib;
 			sourceTree = "<group>";
@@ -468,42 +476,42 @@
 			name = LinePanel.strings;
 			sourceTree = "<group>";
 		};
-		417C5C1F0B962CDF008C4735 /* PrintPanelAccessory.strings */ = {
+		418A618316DECC0D00D80703 /* PrintAccessory.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				417C5C200B962CDF008C4735 /* English */,
+				418A618416DECC0D00D80703 /* English */,
 			);
-			name = PrintPanelAccessory.strings;
+			name = PrintAccessory.strings;
 			sourceTree = "<group>";
 		};
 		419167BA0B78226C00B4CA33 /* SelectLinePanel.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				419167BB0B78226D00B4CA33 /* English */,
+				41B87F091639EFE7005437AB /* Base */,
 			);
 			name = SelectLinePanel.nib;
+			sourceTree = "<group>";
+		};
+		41CDED0E1747190A002F6E28 /* EncodingAccessory.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				41CDED0F1747190A002F6E28 /* English */,
+			);
+			name = EncodingAccessory.nib;
 			sourceTree = "<group>";
 		};
 		41FA799F0B95F0F300FA84AA /* PrintPanelAccessory.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				41FA79A00B95F0F300FA84AA /* English */,
+				41B87F061639EFE7005437AB /* Base */,
 			);
 			name = PrintPanelAccessory.nib;
-			sourceTree = "<group>";
-		};
-		6FE2090CFE93D5F211CA2CEA /* EncodingAccessory.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				6FE2090DFE93D5F211CA2CEA /* English */,
-			);
-			name = EncodingAccessory.nib;
 			sourceTree = "<group>";
 		};
 		6FE20910FE93D5F211CA2CEA /* Preferences.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				6FE20911FE93D5F211CA2CEA /* English */,
+				41B87F041639EFE7005437AB /* Base */,
 			);
 			name = Preferences.nib;
 			sourceTree = "<group>";
@@ -511,7 +519,7 @@
 		6FE20912FE93D5F211CA2CEA /* Edit.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				6FE20914FE93D5F211CA2CEA /* English */,
+				41B87F031639EFE7005437AB /* Base */,
 			);
 			name = Edit.nib;
 			sourceTree = "<group>";
@@ -535,7 +543,7 @@
 		92A68B1702972AB9007F9DE6 /* SelectEncodingsPanel.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				92A68B1802972AB9007F9DE6 /* English */,
+				41B87F071639EFE7005437AB /* Base */,
 			);
 			name = SelectEncodingsPanel.nib;
 			sourceTree = "<group>";
@@ -546,10 +554,11 @@
 		41534B8F08A2B299002069FE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
 				BUILD_PHASING = YES;
+				CLANG_CXX_LIBRARY = "libc++";
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_GC = unsupported;
@@ -560,11 +569,7 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
-				MACOSX_DEPLOYMENT_TARGET = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "$(cflags)";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -577,6 +582,7 @@
 					"-e",
 					start,
 				);
+				VALID_ARCHS = "armv6 armv7 i386 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -591,10 +597,11 @@
 		41534B9008A2B299002069FE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				BUILD_PHASING = YES;
+				CLANG_CXX_LIBRARY = "libc++";
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_GC = unsupported;
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Libraries/CIncludes\"";
@@ -602,11 +609,7 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
-				MACOSX_DEPLOYMENT_TARGET = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "$(cflags)";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -634,9 +637,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EA564B1413C6507000FBCF57 /* Version.xcconfig */;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
 				MACOSX_DEPLOYMENT_TARGET = "";
-				SDKROOT = macosx;
+				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
 		};
@@ -644,9 +646,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EA564B1413C6507000FBCF57 /* Version.xcconfig */;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
 				MACOSX_DEPLOYMENT_TARGET = "";
-				SDKROOT = macosx;
 			};
 			name = Release;
 		};

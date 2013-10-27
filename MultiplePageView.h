@@ -3,7 +3,7 @@
      File: MultiplePageView.h
  Abstract: View which holds all the pages together in the multiple-page case.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following

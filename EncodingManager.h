@@ -4,7 +4,7 @@
  Abstract: Helper class providing additional functionality for character encodings.
  This file also defines the EncodingPopUpButtonCell class.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following

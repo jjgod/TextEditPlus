@@ -3,7 +3,7 @@
      File: PrintPanelAccessoryController.m
  Abstract: PrintPanelAccessoryController is a subclass of NSViewController demonstrating how to add an accessory view to the print panel.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -64,10 +64,35 @@
  */
 - (void)setRepresentedObject:(id)printInfo {
     [super setRepresentedObject:printInfo];
-    [self setPageNumbering:[[[NSUserDefaults standardUserDefaults] objectForKey:NumberPagesWhenPrinting] boolValue]];
-    [self setWrappingToFit:[[[NSUserDefaults standardUserDefaults] objectForKey:WrapToFitWhenPrinting] boolValue]];
+    // We don't bind to NSUserDefaults since we don't want changes while one panel is up to affect other panels that may be up
+    self.pageNumbering = [[NSUserDefaults standardUserDefaults] boolForKey:NumberPagesWhenPrinting];
+    self.wrappingToFit = [[NSUserDefaults standardUserDefaults] boolForKey:WrapToFitWhenPrinting];
+    [self addObserver:self forKeyPath:@"pageNumbering" options:0 context:NULL];
+    [self addObserver:self forKeyPath:@"wrappingToFit" options:0 context:NULL];
 }
 
+- (void)dealloc {
+    if (self.representedObject) {   // If setRepresentedObject: wasn't called, no observers, so don't attempt to remove
+        [self removeObserver:self forKeyPath:@"pageNumbering"];
+        [self removeObserver:self forKeyPath:@"wrappingToFit"];
+    }
+    [super dealloc];
+}
+
+/* The values are sticky, so write them out to defaults when they change
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if ([keyPath isEqual:@"pageNumbering"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:self.pageNumbering forKey:NumberPagesWhenPrinting];
+    } else if ([keyPath isEqual:@"wrappingToFit"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:self.wrappingToFit forKey:WrapToFitWhenPrinting];
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
+/* We don't use a instance variable to store pageNumbering, but instead get/set it in the printInfo. Hence we need custom accessors.
+ */
 - (void)setPageNumbering:(BOOL)flag {
     NSPrintInfo *printInfo = [self representedObject];
     [[printInfo dictionary] setObject:[NSNumber numberWithBool:flag] forKey:NSPrintHeaderAndFooter];
@@ -76,14 +101,6 @@
 - (BOOL)pageNumbering {
     NSPrintInfo *printInfo = [self representedObject];
     return [[[printInfo dictionary] objectForKey:NSPrintHeaderAndFooter] boolValue];
-}
-
-- (IBAction)changePageNumbering:(id)sender {
-    [self setPageNumbering:[sender state] ? YES : NO];
-}
-
-- (IBAction)changeWrappingToFit:(id)sender {
-    [self setWrappingToFit:[sender state] ? YES : NO];
 }
 
 - (NSSet *)keyPathsForValuesAffectingPreview {
@@ -95,13 +112,13 @@
 - (NSArray *)localizedSummaryItems {
     NSMutableArray *items = [NSMutableArray array];
     [items addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                      NSLocalizedStringFromTable(@"Header and Footer", @"PrintPanelAccessory", @"Print panel summary item title for whether header and footer (page number, date, document title) should be printed"), NSPrintPanelAccessorySummaryItemNameKey,
-                      [self pageNumbering] ? NSLocalizedStringFromTable(@"On", @"PrintPanelAccessory", @"Print panel summary value for feature that is enabled") : NSLocalizedStringFromTable(@"Off", @"PrintPanelAccessory", @"Print panel summary value for feature that is disabled"), NSPrintPanelAccessorySummaryItemDescriptionKey,
+                      NSLocalizedStringFromTable(@"Header and Footer", @"PrintAccessory", @"Print panel summary item title for whether header and footer (page number, date, document title) should be printed"), NSPrintPanelAccessorySummaryItemNameKey,
+                      [self pageNumbering] ? NSLocalizedStringFromTable(@"On", @"PrintAccessory", @"Print panel summary value for feature that is enabled") : NSLocalizedStringFromTable(@"Off", @"PrintAccessory", @"Print panel summary value for feature that is disabled"), NSPrintPanelAccessorySummaryItemDescriptionKey,
                       nil]];
     // We add the "Rewrap to fit page" item to the summary only if the item is settable (which it isn't, for "wrap-to-page" mode)
     if ([self showsWrappingToFit]) [items addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                     NSLocalizedStringFromTable(@"Rewrap to fit page", @"PrintPanelAccessory", @"Print panel summary item title for whether document contents should be rewrapped to fit the page"), NSPrintPanelAccessorySummaryItemNameKey,
-                                                     [self wrappingToFit] ? NSLocalizedStringFromTable(@"On", @"PrintPanelAccessory", @"Print panel summary value for feature that is enabled") : NSLocalizedStringFromTable(@"Off", @"PrintPanelAccessory", @"Print panel summary value for feature that is disabled"), NSPrintPanelAccessorySummaryItemDescriptionKey,
+                                                     NSLocalizedStringFromTable(@"Rewrap to fit page", @"PrintAccessory", @"Print panel summary item title for whether document contents should be rewrapped to fit the page"), NSPrintPanelAccessorySummaryItemNameKey,
+                                                     [self wrappingToFit] ? NSLocalizedStringFromTable(@"On", @"PrintAccessory", @"Print panel summary value for feature that is enabled") : NSLocalizedStringFromTable(@"Off", @"PrintAccessory", @"Print panel summary value for feature that is disabled"), NSPrintPanelAccessorySummaryItemDescriptionKey,
                                                      nil]];
     return items;
 }

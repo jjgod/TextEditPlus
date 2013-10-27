@@ -5,7 +5,7 @@
  
  The Preferences instance also acts as a delegate for the window, in order to validate edits before it closes, and for the two text fields bound to the window size in characters, so that invalid entries trigger a reset to a field's previous value.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following

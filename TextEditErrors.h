@@ -3,7 +3,7 @@
      File: TextEditErrors.h
  Abstract: Definition of TextEdit-specific error domain and codes for NSError.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following

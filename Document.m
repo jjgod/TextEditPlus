@@ -3,7 +3,7 @@
      File: Document.m
  Abstract: Document object for TextEdit. 
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -112,7 +112,6 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[self setScaleFactor:1.0];
 	[self setDocumentPropertiesToDefaults];
 	inDuplicate = NO;
-	saveOperationTypeLock = [[NSLock alloc] init];
         
 	// Assume the default file type for now, since -initWithType:error: does not currently get called when creating documents using AppleScript. (4165700)
 	[self setFileType:[[NSDocumentController sharedDocumentController] defaultType]];
@@ -207,7 +206,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[text beginEditing];
 	success = [text readFromURL:absoluteURL options:options documentAttributes:&docAttrs error:outError];
 
-    if (!success) {
+        if (!success) {
 	    [text endEditing];
 	    layoutMgrEnum = [layoutMgrs objectEnumerator]; // rewind
 	    while ((layoutMgr = [layoutMgrEnum nextObject])) [text addLayoutManager:layoutMgr];   // Add the layout managers back
@@ -332,13 +331,9 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 	[textAttributes setObject:defaultRichParaStyle forKey:NSParagraphStyleAttributeName];
     } else {
 	NSFont *plainFont = [NSFont userFixedPitchFontOfSize:0.0];
-        NSFont *charWidthFont = plainFont;
+        NSFont *charWidthFont = [plainFont screenFontWithRenderingMode:NSFontDefaultRenderingMode];
 	NSInteger tabWidth = [[NSUserDefaults standardUserDefaults] integerForKey:TabWidth];
-	CGFloat charWidth;
-
-        if ([self usesScreenFonts]) charWidthFont = [plainFont screenFontWithRenderingMode:NSFontDefaultRenderingMode];
-
-        charWidth = [@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:charWidthFont forKey:NSFontAttributeName]].width;
+	CGFloat charWidth = [@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:charWidthFont forKey:NSFontAttributeName]].width;
         if (charWidth == 0) charWidth = [charWidthFont maximumAdvancement].width;
 	
 	// Now use a default paragraph style, but with the tab width adjusted
@@ -398,11 +393,11 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     [title release];
     [keywords release];
     [copyright release];
+    [company release];
     
     [fileTypeToSet release];
 
     [originalOrientationSections release];
-    [saveOperationTypeLock release];
     [super dealloc];
 }
 
@@ -567,14 +562,17 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 */
 - (NSDictionary *)documentPropertyToAttributeNameMappings {
     static NSDictionary *dict = nil;
-    if (!dict) dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-	NSCompanyDocumentAttribute, @"company", 
-	NSAuthorDocumentAttribute, @"author", 
-	NSKeywordsDocumentAttribute, @"keywords", 
-  	NSCopyrightDocumentAttribute, @"copyright", 
-	NSTitleDocumentAttribute, @"title", 
-	NSSubjectDocumentAttribute, @"subject", 
-	NSCommentDocumentAttribute, @"comment", nil];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+	    NSCompanyDocumentAttribute, @"company",
+	    NSAuthorDocumentAttribute, @"author",
+	    NSKeywordsDocumentAttribute, @"keywords",
+	    NSCopyrightDocumentAttribute, @"copyright",
+	    NSTitleDocumentAttribute, @"title",
+	    NSSubjectDocumentAttribute, @"subject",
+	    NSCommentDocumentAttribute, @"comment", nil];
+    });
     return dict;
 }
 
@@ -816,12 +814,6 @@ void validateToggleItem(NSMenuItem *aCell, BOOL useFirst, NSString *first, NSStr
     return success;
 }
 
-/* Target/action method for saving as (actually "saving to") PDF. Note that this approach of omitting the path will not work on Leopard; see TextEdit's README.rtf
-*/
-- (IBAction)saveDocumentAsPDFTo:(id)sender {
-    [self printDocumentWithSettings:[NSDictionary dictionaryWithObjectsAndKeys:NSPrintSaveJob, NSPrintJobDisposition, nil] showPrintPanel:NO delegate:nil didPrintSelector:NULL contextInfo:NULL];
-}
-
 @end
 
 
@@ -895,13 +887,13 @@ In addition we overwrite this method as a way to tell that the document has been
 - (void)saveToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation completionHandler:(void (^)(NSError *error))handler {
     // Note that we do the breakUndoCoalescing call even during autosave, which means the user's undo of long typing will take them back to the last spot an autosave occured. This might seem confusing, and a more elaborate solution may be possible (cause an autosave without having to breakUndoCoalescing), but since this change is coming late in Leopard, we decided to go with the lower risk fix.
     [[self windowControllers] makeObjectsPerformSelector:@selector(breakUndoCoalescing)];
-	[saveOperationTypeLock lock];
-    currentSaveOperation = saveOperation;
-	handler = [Block_copy(handler) autorelease];
-    [super saveToURL:absoluteURL ofType:typeName forSaveOperation:saveOperation completionHandler:^(NSError *error) {
+    [self performAsynchronousFileAccessUsingBlock:^(void (^fileAccessCompletionHandler)(void) ) {
+        currentSaveOperation = saveOperation;
+        [super saveToURL:absoluteURL ofType:typeName forSaveOperation:saveOperation completionHandler:^(NSError *error) {
             [self setEncodingForSaving:NoStringEncoding];   // This is set during prepareSavePanel:, but should be cleared for future save operation without save panel
-        [saveOperationTypeLock unlock];
-        handler(error);
+            fileAccessCompletionHandler();
+            handler(error);
+        }];
     }];
     
 }
@@ -1286,7 +1278,9 @@ In addition we overwrite this method as a way to tell that the document has been
 	string = [textStorage string];
 	NSStringEncoding enc = [self encoding];
 	[self setEncodingForSaving:(enc == NoStringEncoding || ![string canBeConvertedToEncoding:enc]) ? [self suggestedDocumentEncoding] : enc];
-	[savePanel setAccessoryView:[[[NSDocumentController sharedDocumentController] class] encodingAccessory:[self encodingForSaving] includeDefaultEntry:NO encodingPopUp:&encodingPopup checkBox:&extCheckbox]];
+        NSView *accessoryView = [[[NSDocumentController sharedDocumentController] class] encodingAccessory:[self encodingForSaving] includeDefaultEntry:NO encodingPopUp:&encodingPopup checkBox:&extCheckbox];
+        accessoryView.translatesAutoresizingMaskIntoConstraints = NO;
+	[savePanel setAccessoryView:accessoryView];
 	
 	// Set up the checkbox
 	[extCheckbox setTitle:NSLocalizedString(@"If no extension is provided, use \\U201c.txt\\U201d.", @"Checkbox indicating that if the user does not specify an extension when saving a plain text file, .txt will be used")];

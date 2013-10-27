@@ -4,7 +4,7 @@
  Abstract: Helper class providing additional functionality for character encodings.
  This file also defines the EncodingPopUpButtonCell class.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -49,8 +49,9 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import <UniversalDetector/UniversalDetector.h>
+
 #import "EncodingManager.h"
-#import "UniversalDetector.h"
 
 /*
     EncodingPopUpButtonCell is a subclass of NSPopUpButtonCell which provides the ability to automatically recompute its contents on changes to the encodings list. This allows sprinkling these around the app any have them automatically update themselves. Because we really only want to know when the cell's selectedItem is changed, we want to prevent the last item ("Customize...") from being selected.
@@ -277,10 +278,11 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr) {
 
 - (IBAction)showPanel:(id)sender {
     if (!encodingMatrix) {
-        if (![NSBundle loadNibNamed:@"SelectEncodingsPanel" owner:self])  {
+        if (![[NSBundle mainBundle] loadNibNamed:@"SelectEncodingsPanel" owner:self topLevelObjects:NULL])  {
             NSLog(@"Failed to load SelectEncodingsPanel.nib");
             return;
         }
+        [[encodingMatrix window] retain];                               // loadNibNamed:owner:topLevelObjects: does not retain top level objects
         [(NSPanel *)[encodingMatrix window] setWorksWhenModal:YES];	// This should work when open panel is up
         [[encodingMatrix window] setLevel:NSModalPanelWindowLevel];	// Again, for the same reason
         [self setupEncodingsList];					// Initialize the list (only need to do this once)

@@ -3,7 +3,7 @@
      File: Document.h
  Abstract: Document object for TextEdit. 
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -84,7 +84,6 @@
     NSStringEncoding documentEncodingForSaving;	    /* NSStringEncoding for saving the document */
     NSSaveOperationType currentSaveOperation;          /* So we can know whether to use documentEncodingForSaving or documentEncoding
                                                         in -fileWrapperOfType:error: */
-    NSLock *saveOperationTypeLock;                  /* so we can atomically set the save operation type and do the save */
     
     
     // Temporary information about document's desired file type
@@ -150,7 +149,6 @@
 /* Action methods */
 - (IBAction)toggleReadOnly:(id)sender;
 - (IBAction)togglePageBreaks:(id)sender;
-- (IBAction)saveDocumentAsPDFTo:(id)sender;
 
 /* Whether conversion to rich/plain be done without loss of information */
 - (BOOL)toggleRichWillLoseInformation;

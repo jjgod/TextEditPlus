@@ -3,7 +3,7 @@
      File: PrintPanelAccessoryController.h
  Abstract: PrintPanelAccessoryController is a subclass of NSViewController demonstrating how to add an accessory view to the print panel.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -54,9 +54,6 @@
     BOOL showsWrappingToFit;
     BOOL wrappingToFit;
 }
-
-- (IBAction)changePageNumbering:(id)sender;
-- (IBAction)changeWrappingToFit:(id)sender;
 
 @property BOOL pageNumbering;
 @property BOOL wrappingToFit;

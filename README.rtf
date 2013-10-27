@@ -1,226 +1,15 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1219\cocoasubrtf210
+{\rtf1\ansi\ansicpg1252\cocoartf1248
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset0 Courier;\f2\fnil\fcharset0 Monaco;
 }
-{\colortbl;\red255\green255\blue255;\red0\green116\blue0;\red92\green38\blue153;}
-\margl1440\margr1440\vieww16140\viewh14380\viewkind0
+{\colortbl;\red255\green255\blue255;\red92\green38\blue153;}
+\margl1440\margr1440\vieww12360\viewh9720\viewkind0
 \pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \f0\b\fs48 \cf0 TextEdit\
 \pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
 \b0\fs24 \cf0 \
-This directory contains the source code for the Objective-C version of TextEdit, which is a simple text editor based on the NSText and NSDocument subsystems of Cocoa.\
-\
-Scroll about halfway down this document for an overview of the source files in TextEdit.\
-\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes in TextEdit 1.8 (Zin):\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 By adopting the Ubiquity entitlement, TextEdit is now able to use iCloud document storage.  This is automatic for an Auto Save app like TextEdit; one change TextEdit had to do was to switch from overriding NSDocumentController's -runModalOpenPanel:forTypes: to -beginOpenPanel:forTypes:completionHandler:, in order enable NSDocument to present the open panel non-modally when appropriate.\
-\'95 TextEdit's nib files have now all been converted to use autolayout.\
-\'95 TextEdit adopts NSScrollView's zooming feature. This is active even in Wrap-to-Window mode.  In Wrap-to-Page mode, the zooming pop-up has been removed, which enables TextEdit to use overall scrollers. There is a new menu to control zooming level, or the user can just zoom in and out using magnify gestures.\
-\'95 For new rich text documents, TextEdit now uses fractional glyph advancements, rather than integral. The former provides for better looking text with more natural spacing, and is especially nicer looking in higher resolution modes.  TextEdit calls -[NSLayoutManager setUsesScreenFonts:] to change this setting. Documents coming from older OS X systems are still displayed using integral glyph advancements, for document compatibility.\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
-\cf0 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes in TextEdit 1.7 (Lion):\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 In Mac OS X Lion, TextEdit adopts Auto Save. TextEdit overrides the NSDocument class method +autosavesInPlace and returns YES to enable saveless.  In addition there is a bunch of code to support TextEdit's ability to deal with multiple file types and to transparently transform between them (RTF to RTFD for instance).  Not all applications will need this level of customization.  Note that TextEdit's "File" menu is automatically updated by the AppKit to reflect Auto Save changes, such as the replacement of the "Save As\'85" item with "Duplicate."  This allows the same menu to be used on 10.6 and 10.7 systems.\
-\'95 Support for the AutosaveDelay preference has been removed; along with the UI to set it. (That preference will still control how often SnowLeopard version of TextEdit automatically saves, for backup purposes.)  For 10.7 there is a new AutosavingDelay preference, which is set to 30 by default.  It controls how frequently the new save-in-place saving kicks in. It can be changed only from the command line for demo and experimentation purposes, if needed.\
-\'95 TextEdit enables the new "inspector bar" feature of NSTextView.\
-\'95 TextEdit now enables rewrapping (rather than scaling) of the contents to the page size when printing "wrap-to-window" documents. The setting is controlled in the print panel, and is remembered between invocations of the panel (and across launches).\
-\'95 TextEdit enables the attachment preview via QuickLook.\
-\'95 TextEdit now supports vertical text layout.\
-\'95 TextEdit showcases the new text finder bar, with -[NSTextView setUsesFindBar:YES]. \
-\'95 TextEdit opts into Automatic Termination. However, this opt-in is done automatically by the system. Normally TextEdit would have had to put an entry for NSSupportsAutomaticTermination in its Info.plist or call -[NSProcessInfo setAutomaticTerminationSupportEnabled:YES].\
-\'95 In TextEdit's "Wrap to Window" mode, document layout and wrapping is determined by window width. Because of this, TextEdit reacts to changes in scroller style by changing the size of the window rather than the size of the content.  This explains the code in DocumentWindowController to observe and react to scrollerStyle, as well as the code to persist and restore this setting as a part of state restoration.\
-\'95 TextEdit is sandboxed in Lion.\
-\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes in TextEdit 1.6 (SnowLeopard):\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \
-\'95 As with most system apps, TextEdit is now 64-bit by default.\
-\'95 The dock icon for TextEdit now has a "New Document" item.\
-\'95 "Link\'85," "Table\'85," and "List\'85" menu items have been relocated in the menus. \
-\'95 "Link\'85" and kerning commands now have command key equivalents.\
-\'95 There is now an explicit menu item, "Attach Files\'85," for inserting attachments (images, documents, arbitrary folders) into documents.\
-\'95 TextEdit's services menu offerings have been tweaked to fit better with the 10.6 services menu architecture: The titles are improved, and "Open Selected File" is declared with an entry for NSRequiredContext, so that it only shows when a file path is selected.\
-\'95 TextEdit enables concurrent document opening for all types except HTML and WebArchive.  This is achieved by a single-line override of the method -canConcurrentlyReadDocumentsOfType: in TextEdit's subclass of NSDocument.m.\
-\'95 TextEdit's preferences panel is now bindings-based, greatly simplifying the Preferences class and allowing better support for Sudden Termination.\
-\'95 TextEdit now has menu items and preferences for controlling spelling and grammar checking and correction, data detectors, as well as text substitution and transformation features. \'a0Text substitution and automatic spelling correction are enabled by default. The list of substitutions can be controlled via the new "Language & Text" pane in System Preferences.\
-\'95 TextEdit now has "Save As PDF..." menu item. It allows generating PDF for the current document without going through the print panel. Note that this functionality can easily be achieved in an NSDocument-based app on SnowLeopard by simply omitting the value of the NSPrintSavePath key (and the new NSPrintJobSavingURL key). TextEdit does this. On Leopard, some lines of code are needed; here is what TextEdit had to do before it switched simply omitting NSPrintSavePath from the -[NSDocument printDocumentWithSettings:showPrintPanel:delegate:didPrintSelector:contextInfo:] call:\
-\
-\pard\tx1120\pardeftab1120\li2440\fi-2440\pardirnatural
-
-\f1 \cf0 \CocoaLigature0     NSSavePanel *savePanel = [NSSavePanel savePanel];\
-\cf2     // Come up with a default name for the saved PDF\
-\cf0     NSString *defaultPDFFileName = [[[[self fileURL] path] lastPathComponent] stringByDeletingPathExtension];	\cf2 // May end up nil\cf0 \
-    [savePanel setRequiredFileType:@"pdf"];\
-    [savePanel setCanSelectHiddenExtension:YES];\
-    if (defaultPDFFileName) [savePanel setNameFieldStringValue:defaultPDFFileName];\
-\cf2     // Use the 10.6-introduced sheet API with block handler\
-\cf0     [savePanel beginSheetModalForWindow:[[[self windowControllers] objectAtIndex:0] window] completionHandler:^(NSInteger result) \{\
-	if (result == NSFileHandlingPanelOKButton) \{	\cf2 // Only if not cancelled\cf0 \
-	    [self printDocumentWithSettings:[NSDictionary dictionaryWithObjectsAndKeys:NSPrintSaveJob, NSPrintJobDisposition, [savePanel filename], NSPrintSavePath, nil] showPrintPanel:NO delegate:nil didPrintSelector:NULL contextInfo:NULL];\
-\cf2 	    // Properly hide the file name extension\
-\cf0 	    if ([savePanel isExtensionHidden]) [[NSFileManager defaultManager] setAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], NSFileExtensionHidden, nil] ofItemAtPath:[savePanel filename] error:NULL];\
-	\}\
-    \}];\
-\pard\tx1120\li2440\fi-2440
-
-\f0 \cf0 \CocoaLigature1 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 \
-Changes in TextEdit 1.5 (Leopard):\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 TextEdit is now NSDocument-based and thus provides many features provided or enabled by NSDocument, such as correct file tracking. \
-\'95 Due to the NSDocument changes, some open/save options have been removed from TextEdit's preference panel.\
-\'95 TextEdit now has "autosave" functionality.  By default documents are autosaved every 30 seconds, but this can be changed via the preferences panel.\
-\'95 TextEdit now uses 64-bit compatible types such as NSInteger and CGFloat. It can be built and used in 64-bit mode.\
-\'95 TextEdit supports two new document formats, Word 2007 (.docx) and OpenDocument (.odt).\
-\'95 TextEdit enables non-contiguous text layout, which enables much faster processing of large files.\
-\'95 TextEdit now stores encoding of plain text files with the file, as an extended attribute. (Please refer to the Foundation release notes for technical details on this.)  The stored encoding enables the files to be interpreted correctly upon reading. With this change, the default encoding for saving in TextEdit has also been changed to UTF-8. This can of course be overridden through the preference panel, or on a per-file basis in the save panel.\
-\'95 There is now a \'93Select Line\'94 panel, which lets you go to a line or range of lines.  It\'92s implemented as subclass of NSWindowController.\
-\'95 TextEdit has a subclass of NSViewController to manage a print panel accessory that enables changing printing of headers and footers.  The "Number pages when printing" option has been removed from the preference panel.\
-\'95 Another NSWindowController subclass, DocumentPropertiesPanelController, manages the properties panel. This class shows how to implement an inspector-style panel using bindings, and provide reasonable edit-commiting behaviors (for instance, when the panel is dismissed, when document windows are saved or deactivated, etc). With the introduction of this class, some messy code in the Document class to manage undos in the presence of "continuously updating" text fields have been removed.\
-\'95 As always, TextEdit highlights some of the other new features in the Cocoa text system, such as ability to do smart quotes or links.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 \
-Changes in TextEdit 1.4 (Tiger):\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 TextEdit now uses new NSError and NSAlert facilities to put up better error messages on failed file system operations.\
-\'95 TextEdit now has a preference to enable the use of the new Cocoa feature to auto-number printed pages. Although the feature enables sophisticated customization of the headers and footers by the application, TextEdit just uses the default format.\
-\'95 The new "Document Properties" panel enables setting properties such as author, company, comment, etc.  The fields in the panel are hooked up to the document via bindings, and are imported by the Spotlight text importer for easy searching. The preferences panel has fields where you can specify default values for properties (for which default values are appropriate).\
-\'95 TextEdit can now save WordML, HTML, and Safari WebArchive documents.  In the preferences panel you can specify a number of options for controlling the type of HTML that is generated.\
-\'95 TextEdit has a few menu items to support new text system features such as tables, lists, and link editing panel. Other than the new menu items, these features are pretty much free for TextEdit.  Be sure to read about new text features in the AppKit release notes.\
-\'95 The new Insert submenu under the Edit menu enables inserting line break, paragraph break, and page break. Note that the default line break you get by hitting the Return key is actually paragraph break; line break is used to break lines without starting a new paragraph.\
-\'95 Undo can now be used to undo changes across a save.  Note that on save, TextEdit now calls the new NSTextView method, breakUndoCoalescing, in order to let the text system know that it shouldn't coalesce across a save.\
-\'95 TextEdit can now process Finder or scripting print requests much better.\
-\'95 When multiple documents are opened simultaneously, TextEdit now makes the first one key, and opens others behind this first document.  For large numbers of files, this change reduces the overall time before the application is responsive.  In addition, in these cases TextEdit now does foreground (that is, uninterruptible) text layout only for the front-most document. This also helps greatly improve the time to make the app responsive when the files are large.\
-\'95 TextEdit now uses -[NSParagraphStyle defaultTabInterval] to manage tab stops in plain text documents, rather than having to fix up tab stops after every change. This change removes a good number of lines, including the routine fixUpTabsInRange: and the need to observe textStorageDidProcessEditing:.\
-\'95 If user's default encoding choice and their defaultCStringEncoding don't work for a plain document, then try Unicode, assuming it's in their encodings list.\
-\'95 When an RTF document becomes RTFD, the user now has the option to save the document with the same name (this happens by saving a .rtfd file and thrashing the .rtf).\
-\'95 NSSavePanel's setAllowsOtherFileTypes: method is now used in the plain text case, to use a ".txt" extension unless the user specifies otherwise.\
-\'95 Checkbox in the plain text save panel now allows the user the control the ".txt" extension.\
-\'95 The preferences panel has been redesigned. And although it is a good candidate for using NSUserDefaultsController and bindings, it doesn't yet. It should.\
-\'95 The Cocoa text system now lets you create multiple, non-contiguous selections when editing text. Option-drag will let you select text in a rectangular area; command-click will let you add new selections to an existing selection. You can then copy the contents of these multiple selected regions as if they were one.  In addition, you can select all occurrences of a word in the Find panel by holding down control when clicking "Replace All" (this exposes the "Select All" command). Finally, you can use the Styles panel to find all text which is of a given style.\
-\'95 TextEdit's AppleScript command handling for "save" has been improved and made safer.\
-\'95 TextEdit is still not NSDocument-based. It should be.\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes in TextEdit 1.3, Mac OS X 10.3 (Panther):\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 TextEdit now uses NSTextView's new built-in find panel.  The TextFinder class was removed and the find menu items were changed to send the standard performFindPanelAction: method down the responder chain.\
-\'95 Command key for "Find Previous" has been changed to cmd-shift-G.\
-\'95 TextEdit can now open and save Word ".doc" format documents. This support is based on Cocoa's ".doc" support; TextEdit simply adds a format popup in the save panel to allow choosing between RTF and Word formats. Note that because Word files may be loaded lossily, TextEdit will warn when overwriting a Word file.\
-\'95 TextEdit's "Edit" menu has new menu items: "Paste With Current Style" and "Complete."  These are not yet in the standard IB templates, but might get added in the future.\
-\'95 Default ruler tab stops setting now depends on the user's measurement units.\
-\'95 When saving a document, TextEdit now checks to see if the file on disk has the same modification date as the document when it was last opened or saved; if not, TextEdit puts up an alert. The same kind of check is made when an already open and unsaved document is opened again from Finder.\
-\'95 TextEdit's link handling code was made more robust by dealing with NSURL links and not assuming the link attribute is of type NSString. TextEdit can now also read/write and copy/paste links (thanks to changes in Cocoa's RTF handling). However note that TextEdit does not provide UI to let users create links.\
-\'95 Eliminated special code to deal with setting of open/save panel directories; we now go with the default behavior of open/save panels. The only custom code left is to deal with the "OpenPanelFollowsMainWindow" preference, which is by default off.\
-\'95 TextEdit calls setAllowsDocumentBackgroundColorChange:YES to enable user setting of the text background color. It also saves this color as a document attribute.\
-\'95 And as usual, TextEdit automatically benefits from many changes made in Cocoa. These include enhancements in text editing, new ruler, additional character style controls in the font panel, improvements in RTF handling, new open/save panels, etc. 
-\b\fs28 \
-
-\b0\fs24 \
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes in TextEdit 1.2, Mac OS X 10.2 (Jaguar):\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \
-\'95 Default rulers for new documents now have 12 tab stops 1/2 inch apart (instead of the giant 1 inch tabs).  Rulers are also shown by default for rich text documents. This can be disabled in the preferences panel.\
-\'95 TextEdit's Info.plist declares CFBundleDisplayName to allow localization of its name in Finder and open/save panels. It also declares MIME types for text and RTF documents.\
-\'95 TextEdit can now overwrite locked files (like it does files with no write-permissions), assuming the user confirms.\
-\'95 File names received via the "Open File" service will now be sanitized further (by deleting all lines but the first and trimming spaces), if the original name doesn't work.\
-\'95 The list of encodings which appear in the various encodings popups (open/save panels, Preferences panel) can be customized. A new class, EncodingManager, implements this behavior and also collects most of the other encoding-related implementation in TextEdit.\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes TextEdit 1.1, Mac OS X 10.1:\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 Added support for saving files with hidden extensions. If TextEdit was an NSDocument based app, this would be automatic; but it's not, so it requires a few lines of code to (1) enable the save panel to show the checkbox to allow user to set state of hidden extension, and (2) pay attention to the flag and save it with  the document. In addition, TextEdit uses the displayNameAtPath: method in NSFileManager to display document names properly (in the few places it does).\
-\'95 Thanks to changes in Cocoa, TextEdit's recent documents menu will now correctly track documents whose volumes or enclosing folders have been renamed. Note that TextEdit itself does not yet track open documents whose volumes or folders have been renamed. This is automatic in NSDocument, but TextEdit isn't NSDocument based.\
-\'95 Added support for filter services; that is, ability to invoke converters which convert arbitrary text documents to a format TextEdit understands. The ability to use filter services is in the Cocoa text system, TextEdit just looks for the "Converted" flag in the document attributes dictionary, and if the document was converted, assures it is assigned a new name when saving.\
-\'95 In order to preserve any aliases to saved documents and other relevant information (such as icon locations, creation date, etc) in saved documents, TextEdit now attempts to exchange the contents of resaved documents into the previous version of the files. This brings additional user benefits, but also introduces some complexity into TextEdit's save routine (in DocumentReadWrite.m) as exchangedata() is not supported on all file systems and does not work with folders (in TextEdit's case, RTFDs). In those cases TextEdit falls back to moving files around as it used to. In any case, all this is automatic for NSDocument-based applications, and some day we hope to make this functionality easier to access from non-NSDocument based apps as well.\
-\'95 Added support for read-only documents. RTF documents can be saved as read-only, and will be displayed without a blinking cursor when opened. SimpleText "ttro" documents will also be opened the same way. Users can make a document editable through a menu selection.\
-\'95 The untitled document which is brought up automatically when TextEdit is launched or brought forward will be closed if it is left untouched and the user opens another document. TextEdit currently does this itself (see the "transientDocument" code in Document.m), but it would be good to pull this into the AppKit at some point.\
-\'95 A few more encodings have been added to the default open panel encoding popup.\
-\'95 Changed app signature of TextEdit to 'ttxt', which matches that of SimpleText, so that old documents will open in TextEdit and not launch SimpleText in Classic. However, because screen grabs from Mac OS 9 have SimpleText's creator, also added code to recognize these files and pass them off to the user's default image viewer. \
-\'95 Fixed a bug in TextFinder.m where "replace all" could fail and raise if the search string occurred multiple overlapping times in a selection; for instance, "aa" being replaced in the word "craaash".\
-\'95 Preferences object would always write the preferences out on quit, without checking to see if they actually changed. It now does a check.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 \
-Changes in TextEdit 1.0, Mac OS 10.0:\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 Now using the third possible return value (NSTerminateLater) into applicationShouldTerminate: delegation message to indicate to NSApplication that user is still deciding.\
-\'95 Got rid of showInfoPanel:; all it did was to allow adding "c" (for Objective-C, as opposed to Java) to the version number. Now we just use the standard about panel support and don't add the letter.\
-\'95 We now update the find pasteboard when a new find string is set, rather than on app deactivation, to eliminate any race issues with apps picking up the pasteboard setting during app swapping.\
-\'95 Switched to sheet APIs for NSPrintPanel and NSPageLayout.\
-\'95 Small changes for adapting to scripting framework reorg.\
-\'95 Stopped implementing textView:draggedCell:inRect:event: delegate method; instead now using textView:writablePasteboardTypesForCell:atIndex: and textView:writeCell:atIndex:toPasteboard:type:. This allows more uniform treatment of attachments for dragging.\
-\'95 Added an "app signature". This in general is not needed for applications on Mac OS X. However, Internet Config still requires it, and because TextEdit is a system app which needs to bind to default text documents, we have one. Note that this "app signature" is used only for this purpose, and is not used as a "creator code" on documents saved by TextEdit.\
-\'95 Toggle rich/text menu item is now cmd-shift-T (same as Mail).\
-\'95 In order to be more compatible with the other big RTF writer app out there, TextEdit now uses the "PageSize" document attribute correctly --- that is, for the page size rather than view size. The view size is saved using the new "ViewSize" attribute. In addition, TextEdit now also saves the viewing mode (Wrap to Window or Wrap to Page), and zoom.\
-\'95 TextEdit now appends "txt" to plain text documents, a feature which can be turned off in the Preferences panel. Also, if the user enters an extension, TextEdit uses a new NSSavePanel delegation method to catch this and give the user a chance to decide whether to append the "txt" extension or not.\
-\'95 Note that being the delegate of the save panel (which occurs only in plain text mode) has created an issue: When the save panel is up, the document still ends up being in the responder chain, causing menu items such as "Save" to get validated and thus enabled. We fix this by setting a "runningSheet" instance variable, and looking at that in Document's validateMenuItem:. However, some menu items are still inappropriately enabled, such as "Make Rich Text." We will be looking into a general fix for this issue.\
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 Changes in Mac OS X Public Beta: \
-\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \'95 TextEdit now links against Cocoa.framework, instead of AppKit and AppKitScripting separately.\
-\'95 Default place to save documents is the user's Documents folder.\
-\'95 TextEdit no longer sets a miniwindow icon. With the miniaturization in the dock, most applications can get away without miniwindow images.\
-\'95 The Info.plist now includes a more complete set of types and extensions, allowing TextEdit to see more document types (including untyped files).\
-\'95 TextEdit uses the CFAppleHelpAnchor key in its Info.plist to declare the section of the Apple help book to be consulted when "help" is used. This is an Apple-internal key, and should not be used by third-party applications.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b\fs28 \cf0 \
-Changes in Mac OS X Developer Preview 4:\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600\li140\fi-140
-
-\b0\fs24 \cf0 \
-\'95 TextEdit is now a new Project Builder project.\
-\'95 By using an additional autorelease pool, "Replace All" was speeded up greatly for the case of many small replacements in a large file.\
-\'95 TextEdit will now no longer try to automatically attempt to overwrite read-only files when saving, asking for confirmation instead. You can disable this behavior through the preferences panel.\
-\'95 Whenever a save fails, TextEdit would automatically bring up a "save as" panel to get an alternate place to save the file.  It no longer does this.\
-\'95 TextEdit can now open SimpleText files.\
-\'95 On save, TextEdit will now put up a warning panel if it can't save a file in the original format (for instance, RTF files which have been promoted to RTFD, or formats which are read-only, such as HTML or SimpleText).\
-\'95 The printInfo in Document.m is now created lazily, when first accessed.\
-\'95 TextEdit uses the new document modal (sheet) APIs to bring up document modal panels. These APIs allow each window to have a "doc modal" panel of its own up, but achieve non-modality of the app by working through callbacks. Because TextEdit is not NSDocument-based, it implements a lot of the logic for putting up the panels itself. The intent is to move a lot of this code into the AppKit at some point in the near future.\
-\pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
-\cf0 \
-\
-\
+This directory contains the source code for the TextEdit application. TextEdit is a simple text editor based on the NSText and NSDocument subsystems of Cocoa.\
 \
 \pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
@@ -315,7 +104,7 @@ DocumentWindowController binds its layout manager's hyphenationFactor to documen
 
 \b0\fs24 \cf0 The method 
 \f1 textEditDoForegroundLayoutToCharacterIndex:
-\f0  shows how to get the text system to lay text out in the foreground up to a certain character location. By default the text system does its layout in the background, which allows bringing up the window fairly quickly. The user can even edit, print, or save the document while the background layout is going on. This method enables having the first portion of the document already laid out. Note that this was useful from a user point of view in Tiger, where the scrollbar for the document raced down the page as background layout happened, but it's less interesting in Leopard when non-contiguous background layout is enabled. However, we still do it, and this method is also useful for when printing the document (since TextEdit doesn't rewrap or relayout when printing and just uses its existing layout into).\
+\f0  shows how to get the text system to lay text out in the foreground up to a certain character location. By default the text system does its layout in the background, which allows bringing up the window fairly quickly. The user can even edit, print, or save the document while the background layout is going on. This method enables having the first portion of the document already laid out. Note that this was useful from a user point of view in Tiger, where the scrollbar for the document raced down the page as background layout happened, but it's less interesting in Leopard when non-contiguous background layout is enabled. However, we still do it, and this method is also ueful for when printing the document (since TextEdit doesn't rewrap or relayout when printing and just uses its existing layout into).\
 \
 This class implements a number of NSTextView, NSLayoutManager, and NSWindow delegate methods.  \
 \
@@ -424,7 +213,7 @@ Since
 \
 \pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
-\b0\fs24 \cf0 This file provides the class EncodingManager, which does most of the sophisticated text encoding related stuff.  This class also manages a panel which lets the user customize the list of encodings available in the application.\
+\b0\fs24 \cf0 This file provides the class EncodingManager, which does most of the sophisticed text encoding related stuff.  This class also manages a panel which lets the user customize the list of encodings available in the application.\
 \
 In addition, EncodingManager provides the ability to load the accessory view used in open and save panels.\
 \
@@ -506,5 +295,5 @@ An override of
 These two methods above are part of the NSPrintPanelAccessorizing protocol.\
 \pard\tx960\tx1920\tx2880\tx3840\tx4800\tx5760\tx6720\tx7680\tx8640\tx9600
 
-\f2\fs20 \cf3 \CocoaLigature0 \
+\f2\fs20 \cf2 \CocoaLigature0 \
 }

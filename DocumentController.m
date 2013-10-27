@@ -4,7 +4,7 @@
  Abstract: NSDocumentController subclass for TextEdit.
  Required to support transient documents and customized Open panel.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -281,14 +281,14 @@
 + (NSView *)encodingAccessory:(NSStringEncoding)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup checkBox:(NSButton **)button {
     OpenSaveAccessoryOwner *owner = [[[OpenSaveAccessoryOwner alloc] init] autorelease];
     // Rather than caching, load the accessory view everytime, as it might appear in multiple panels simultaneously.
-    if (![NSBundle loadNibNamed:@"EncodingAccessory" owner:owner])  {
+    if (![[NSBundle mainBundle] loadNibNamed:@"EncodingAccessory" owner:owner topLevelObjects:NULL])  {
         NSLog(@"Failed to load EncodingAccessory.nib");
         return nil;
     }
     if (popup) *popup = owner->encodingPopUp;
     if (button) *button = owner->checkBox;
     [[EncodingManager sharedInstance] setupPopUpCell:[owner->encodingPopUp cell] selectedEncoding:encoding withDefaultEntry:includeDefaultItem];
-    return [owner->accessoryView autorelease];
+    return owner->accessoryView;
 }
 
 /* Overridden to add an accessory view to the open panel. This method is called for both modal and non-modal invocations.
@@ -299,7 +299,9 @@
 
     BOOL ignoreHTMLOrig = [[NSUserDefaults standardUserDefaults] boolForKey:IgnoreHTML];
     BOOL ignoreRichOrig = [[NSUserDefaults standardUserDefaults] boolForKey:IgnoreRichText];
-    [openPanel setAccessoryView:[[self class] encodingAccessory:[[[NSUserDefaults standardUserDefaults] objectForKey:PlainTextEncodingForRead] unsignedIntegerValue] includeDefaultEntry:YES encodingPopUp:&encodingPopUp checkBox:&ignoreRichTextButton]];
+    NSView *accessoryView = [[self class] encodingAccessory:[[[NSUserDefaults standardUserDefaults] objectForKey:PlainTextEncodingForRead] unsignedIntegerValue] includeDefaultEntry:YES encodingPopUp:&encodingPopUp checkBox:&ignoreRichTextButton];
+    accessoryView.translatesAutoresizingMaskIntoConstraints = NO;
+    [openPanel setAccessoryView:accessoryView];
     [ignoreRichTextButton setTitle:NSLocalizedString(@"Ignore rich text commands", @"Checkbox indicating that when opening a rich text file, the rich text should be ignored (causing the file to be loaded as plain text)")];
     [ignoreRichTextButton setToolTip:NSLocalizedString(@"If selected, HTML and RTF files will be loaded as plain text, allowing you to see and edit the HTML or RTF directives.", @"Tooltip for checkbox indicating that when opening a rich text file, the rich text should be ignored (causing the file to be loaded as plain text)")];
     if (ignoreRichOrig != ignoreHTMLOrig) {
@@ -352,4 +354,3 @@
 }
 
 @end
-

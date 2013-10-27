@@ -4,7 +4,7 @@
  Abstract: Central controller object for TextEdit, for implementing app functionality (services) as well
  as few tidbits for which there are no dedicated controllers.
  
-  Version: 1.8
+  Version: 1.9
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
