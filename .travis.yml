@@ -1,2 +1,2 @@
 language: objective-c
-script: xcodebuild -scheme TextEdit -configuration Release build OBJROOT="$PWD/build" SYMROOT="$PWD/build"
+script: xcodebuild -list
