@@ -393,6 +393,86 @@
     }];
 }
 
+#define outputLine(output, line)           [output appendFormat: @"%@\n", line]
+#define outputParagraph(output, paragraph) do { \
+    [output appendFormat: @"%@\n\n", paragraph]; \
+    [paragraph release]; \
+    paragraph = nil; \
+} while (0)
+
+/* Action method for unwrap lines. */
+- (IBAction)unwrapSelectedLines:(id)sender {
+    NSTextStorage *textStorage = [[self document] textStorage];
+    NSRange selectedRange = [[self firstTextView] selectedRange];
+    NSString* contents = [[textStorage attributedSubstringFromRange:selectedRange] string];
+
+    NSUInteger end = 0;
+    BOOL inParagraph = NO;
+    NSCharacterSet *newlineSet = [NSCharacterSet newlineCharacterSet];
+    NSMutableString *output = [[NSMutableString alloc] init];
+
+    NSMutableString *paragraph = nil;
+    for (NSRange range = NSMakeRange(0, 0);
+         end < [contents length];
+         range.location = end)
+    {
+        NSUInteger start = 0;
+        [contents getLineStart:&start
+                           end:&end
+                   contentsEnd:NULL
+                      forRange:range];
+
+        NSRange lineRange = NSMakeRange(start, end - start);
+        NSString *line = [[contents substringWithRange:lineRange] stringByTrimmingCharactersInSet:newlineSet];
+
+        if (inParagraph) {
+            if ([line length] == 0) {
+                inParagraph = NO;
+                outputParagraph(output, paragraph);
+            } else if ([line hasPrefix: @"＝"] ||
+                       [line hasPrefix: @"*"] ||
+                       [line hasPrefix: @"＊"])
+            {
+                inParagraph = NO;
+                outputParagraph(output, paragraph);
+                outputLine(output, line);
+            }
+            else if ([line hasPrefix: @"　　"] || [line hasPrefix: @"    "]) {
+                outputParagraph(output, paragraph);
+                paragraph = [[NSMutableString alloc] initWithString:line];
+            }
+            else
+                [paragraph appendString: line];
+        } else {
+            if ([line hasPrefix: @"　　"] || [line hasPrefix: @"    "])
+            {
+                inParagraph = YES;
+                paragraph = [[NSMutableString alloc] initWithString:line];
+            } else {
+                outputLine(output, line);
+            }
+        }
+    }
+
+    if (inParagraph && paragraph && [paragraph length]) {
+        if ([newlineSet characterIsMember:[contents characterAtIndex:end - 1]])
+            [output appendFormat:@"%@\n", paragraph];
+        else
+            [output appendString:paragraph];
+        [paragraph release];
+        paragraph = nil;
+    }
+
+    if ([[self firstTextView] shouldChangeTextInRange:selectedRange
+                                    replacementString:output]) {
+        [textStorage beginEditing];
+        [textStorage replaceCharactersInRange:selectedRange withString:output];
+        [[self firstTextView] didChangeText];
+        [textStorage endEditing];
+    }
+    [output release];
+}
+
 
 /* Doesn't check to see if the prev value is the same --- Otherwise the first time doesn't work... */
 - (void)updateForRichTextAndRulerState:(BOOL)rich {

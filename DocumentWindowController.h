@@ -71,5 +71,6 @@
 - (NSArray *)layoutOrientationSections;
 
 - (IBAction)chooseAndAttachFiles:(id)sender;
+- (IBAction)unwrapSelectedLines:(id)sender;
 
 @end
