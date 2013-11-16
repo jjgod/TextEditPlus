@@ -55,6 +55,8 @@
 #import "TextEditErrors.h"
 #import "JJTypesetter.h"
 
+#include "opencc.h"
+
 @interface DocumentWindowController(Private)
 
 - (void)setDocument:(Document *)doc; // Overridden with more specific type. Expects Document instance.
@@ -90,6 +92,10 @@
 	layoutMgr = [[NSLayoutManager allocWithZone:[self zone]] init];
 	[layoutMgr setDelegate:self];
 	[layoutMgr setAllowsNonContiguousLayout:YES];
+
+        NSBundle* bundle = [NSBundle mainBundle];
+        NSString* path = [[bundle resourcePath] stringByAppendingPathComponent:[NSString stringWithUTF8String:OPENCC_DEFAULT_CONFIG_TRAD_TO_SIMP]];
+        conversionHandle = opencc_open([path fileSystemRepresentation]);
     }
     return self;
 }
@@ -105,6 +111,9 @@
     [layoutMgr release];
     
     [self showRulerDelayed:NO];
+
+    if (conversionHandle != (opencc_t)-1)
+        opencc_close(conversionHandle);
     
     [super dealloc]; // NSWindowController deallocates all the nib objects
 }
@@ -393,6 +402,27 @@
     }];
 }
 
+- (IBAction)convertToSimplifiedChinese:(id)sender {
+    if (conversionHandle == (opencc_t)-1)
+        return;
+    NSTextStorage *textStorage = [[self document] textStorage];
+    NSRange selectedRange = [[self firstTextView] selectedRange];
+    NSString* contents = [[textStorage attributedSubstringFromRange:selectedRange] string];
+
+    const char* inbuf = [contents UTF8String];
+    char* buf = opencc_convert_utf8(conversionHandle, inbuf, -1);
+    NSString* convertedString = [NSString stringWithUTF8String:buf];
+    opencc_convert_utf8_free(buf);
+
+    if ([[self firstTextView] shouldChangeTextInRange:selectedRange
+                                    replacementString:convertedString]) {
+        [textStorage beginEditing];
+        [textStorage replaceCharactersInRange:selectedRange withString:convertedString];
+        [[self firstTextView] didChangeText];
+        [textStorage endEditing];
+    }
+}
+
 #define outputLine(output, line)           [output appendFormat: @"%@\n", line]
 #define outputParagraph(output, paragraph) do { \
     [output appendFormat: @"%@\n\n", paragraph]; \
@@ -472,7 +502,6 @@
     }
     [output release];
 }
-
 
 /* Doesn't check to see if the prev value is the same --- Otherwise the first time doesn't work... */
 - (void)updateForRichTextAndRulerState:(BOOL)rich {

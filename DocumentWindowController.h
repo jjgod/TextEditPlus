@@ -49,6 +49,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "ScalingScrollView.h"
+#include "opencc_types.h"
 
 @interface DocumentWindowController : NSWindowController <NSLayoutManagerDelegate, NSTextViewDelegate> {
     IBOutlet ScalingScrollView *scrollView;
@@ -56,6 +57,7 @@
     BOOL hasMultiplePages;
     BOOL rulerIsBeingDisplayed;
     BOOL isSettingSize;
+    opencc_t conversionHandle;
 }
 
 // Convenience initializer. Loads the correct nib automatically.
@@ -71,6 +73,7 @@
 - (NSArray *)layoutOrientationSections;
 
 - (IBAction)chooseAndAttachFiles:(id)sender;
+- (IBAction)convertToSimplifiedChinese:(id)sender;
 - (IBAction)unwrapSelectedLines:(id)sender;
 
 @end

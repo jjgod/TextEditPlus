@@ -9,6 +9,13 @@
 /* Begin PBXBuildFile section */
 		071673DD18245550000DFE31 /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 071673DC18245550000DFE31 /* UniversalDetector.framework */; };
 		071673DF1824566B000DFE31 /* UniversalDetector.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 071673DC18245550000DFE31 /* UniversalDetector.framework */; };
+		077D6638183837040017916B /* opencc.h in Headers */ = {isa = PBXBuildFile; fileRef = 077D6636183837040017916B /* opencc.h */; };
+		077D6639183837040017916B /* opencc_types.h in Headers */ = {isa = PBXBuildFile; fileRef = 077D6637183837040017916B /* opencc_types.h */; };
+		07B9EB0418381FD10004C371 /* libopencc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 07B9EB0318381FD10004C371 /* libopencc.dylib */; };
+		07B9EB0518381FDE0004C371 /* libopencc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 07B9EB0318381FD10004C371 /* libopencc.dylib */; };
+		07B9EB07183823060004C371 /* zht2zhs.ini in Resources */ = {isa = PBXBuildFile; fileRef = 07B9EB06183823060004C371 /* zht2zhs.ini */; };
+		07B9EB0A1838360C0004C371 /* trad_to_simp_characters.ocd in Resources */ = {isa = PBXBuildFile; fileRef = 07B9EB081838360C0004C371 /* trad_to_simp_characters.ocd */; };
+		07B9EB0B1838360C0004C371 /* trad_to_simp_phrases.ocd in Resources */ = {isa = PBXBuildFile; fileRef = 07B9EB091838360C0004C371 /* trad_to_simp_phrases.ocd */; };
 		07C9E83C13D8C5A9004E932B /* JJTypesetter.h in Headers */ = {isa = PBXBuildFile; fileRef = 07C9E83A13D8C5A9004E932B /* JJTypesetter.h */; };
 		07C9E83D13D8C5A9004E932B /* JJTypesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C9E83B13D8C5A9004E932B /* JJTypesetter.m */; };
 		176A30480E23EB0600857A3B /* FontNameTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = 176A30460E23EB0600857A3B /* FontNameTransformer.h */; };
@@ -74,6 +81,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				071673DF1824566B000DFE31 /* UniversalDetector.framework in CopyFiles */,
+				07B9EB0518381FDE0004C371 /* libopencc.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +93,12 @@
 		0230D2BFFF2F85EF11CA0C5D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		0230D2C1FF2F85EF11CA0C5D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		071673DC18245550000DFE31 /* UniversalDetector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UniversalDetector.framework; sourceTree = "<group>"; };
+		077D6636183837040017916B /* opencc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opencc.h; sourceTree = "<group>"; };
+		077D6637183837040017916B /* opencc_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opencc_types.h; sourceTree = "<group>"; };
+		07B9EB0318381FD10004C371 /* libopencc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencc.dylib; sourceTree = "<group>"; };
+		07B9EB06183823060004C371 /* zht2zhs.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = zht2zhs.ini; path = OpenCC/data/config/zht2zhs.ini; sourceTree = "<group>"; };
+		07B9EB081838360C0004C371 /* trad_to_simp_characters.ocd */ = {isa = PBXFileReference; lastKnownFileType = file; path = trad_to_simp_characters.ocd; sourceTree = "<group>"; };
+		07B9EB091838360C0004C371 /* trad_to_simp_phrases.ocd */ = {isa = PBXFileReference; lastKnownFileType = file; path = trad_to_simp_phrases.ocd; sourceTree = "<group>"; };
 		07C9E83A13D8C5A9004E932B /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
 		07C9E83B13D8C5A9004E932B /* JJTypesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JJTypesetter.m; sourceTree = "<group>"; };
 		176A30460E23EB0600857A3B /* FontNameTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontNameTransformer.h; sourceTree = "<group>"; };
@@ -152,6 +166,7 @@
 			files = (
 				071673DD18245550000DFE31 /* UniversalDetector.framework in Frameworks */,
 				415B218207BC0732009CEA53 /* Cocoa.framework in Frameworks */,
+				07B9EB0418381FD10004C371 /* libopencc.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,6 +193,8 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
+				077D6636183837040017916B /* opencc.h */,
+				077D6637183837040017916B /* opencc_types.h */,
 				07C9E83A13D8C5A9004E932B /* JJTypesetter.h */,
 				07C9E83B13D8C5A9004E932B /* JJTypesetter.m */,
 				6FE20936FE93D5F211CA2CEA /* README.rtf */,
@@ -252,6 +269,9 @@
 		6FE2091BFE93D5F211CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				07B9EB081838360C0004C371 /* trad_to_simp_characters.ocd */,
+				07B9EB091838360C0004C371 /* trad_to_simp_phrases.ocd */,
+				07B9EB06183823060004C371 /* zht2zhs.ini */,
 				6FE20928FE93D5F211CA2CEA /* Localizable.strings */,
 				6FE2091DFE93D5F211CA2CEA /* ZoomValues.strings */,
 				41249AD503895A6700F1DAE5 /* ServicesMenu.strings */,
@@ -277,6 +297,7 @@
 		6FE20939FE93D5F211CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				07B9EB0318381FD10004C371 /* libopencc.dylib */,
 				071673DC18245550000DFE31 /* UniversalDetector.framework */,
 				0230D2BAFF2F83FC11CA0C5D /* Cocoa.framework */,
 				0230D2BEFF2F85A411CA0C5D /* References (Non-linked frameworks) */,
@@ -291,6 +312,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				077D6638183837040017916B /* opencc.h in Headers */,
 				415B215C07BC0732009CEA53 /* Document.h in Headers */,
 				415B215D07BC0732009CEA53 /* Controller.h in Headers */,
 				415B215E07BC0732009CEA53 /* MultiplePageView.h in Headers */,
@@ -299,6 +321,7 @@
 				415B216107BC0732009CEA53 /* EncodingManager.h in Headers */,
 				FBF176CA084E77CE005F6CEB /* DocumentController.h in Headers */,
 				FB69D020085E20E300646BBF /* DocumentWindowController.h in Headers */,
+				077D6639183837040017916B /* opencc_types.h in Headers */,
 				41097A6808F6EE81001E6639 /* TextEditErrors.h in Headers */,
 				412CFBD50B62AC8A00A46D76 /* LinePanelController.h in Headers */,
 				41FA793A0B95E61A00FA84AA /* PrintPanelAccessoryController.h in Headers */,
@@ -380,6 +403,7 @@
 				415B217207BC0732009CEA53 /* DocumentWindow.nib in Resources */,
 				415B217307BC0732009CEA53 /* SelectEncodingsPanel.nib in Resources */,
 				415B217407BC0732009CEA53 /* ServicesMenu.strings in Resources */,
+				07B9EB07183823060004C371 /* zht2zhs.ini in Resources */,
 				41CDED101747190A002F6E28 /* EncodingAccessory.nib in Resources */,
 				415B217607BC0732009CEA53 /* TextEdit Test Document.rtf in Resources */,
 				415B217707BC0732009CEA53 /* DocumentProperties.nib in Resources */,
@@ -387,7 +411,9 @@
 				419167BC0B78226D00B4CA33 /* SelectLinePanel.nib in Resources */,
 				41FA79A10B95F0F300FA84AA /* PrintPanelAccessory.nib in Resources */,
 				41BFB8E91697ABFB00CD8A52 /* Edit.iconset in Resources */,
+				07B9EB0A1838360C0004C371 /* trad_to_simp_characters.ocd in Resources */,
 				41BFB8EA1697ABFB00CD8A52 /* html.iconset in Resources */,
+				07B9EB0B1838360C0004C371 /* trad_to_simp_phrases.ocd in Resources */,
 				41BFB8EB1697ABFB00CD8A52 /* rtf.iconset in Resources */,
 				41BFB8EC1697ABFB00CD8A52 /* rtfd.iconset in Resources */,
 				41BFB8ED1697ABFB00CD8A52 /* txt.iconset in Resources */,
@@ -569,6 +595,10 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "$(cflags)";
 				OTHER_LDFLAGS = "";
@@ -609,6 +639,10 @@
 				INSTALL_GROUP = wheel;
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "$(cflags)";
 				OTHER_LDFLAGS = "";
