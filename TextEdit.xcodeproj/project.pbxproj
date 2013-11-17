@@ -596,9 +596,8 @@
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
 				LIBRARY_SEARCH_PATHS = (
+					"$(SRCROOT)/OpenCC",
 					"$(inherited)",
-					"$(SRCROOT)",
-					/Users/jjgod/TextEditPlus/OpenCC,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "$(cflags)";
@@ -641,9 +640,8 @@
 				INSTALL_OWNER = root;
 				INSTALL_PATH = "$(SYSTEM_APPS_DIR)";
 				LIBRARY_SEARCH_PATHS = (
+					"$(SRCROOT)/OpenCC",
 					"$(inherited)",
-					"$(SRCROOT)",
-					/Users/jjgod/TextEditPlus/OpenCC,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "$(cflags)";
