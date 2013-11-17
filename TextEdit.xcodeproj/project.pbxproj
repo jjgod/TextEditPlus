@@ -96,7 +96,7 @@
 		077D6636183837040017916B /* opencc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opencc.h; sourceTree = "<group>"; };
 		077D6637183837040017916B /* opencc_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opencc_types.h; sourceTree = "<group>"; };
 		07B9EB0318381FD10004C371 /* libopencc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencc.dylib; sourceTree = "<group>"; };
-		07B9EB06183823060004C371 /* zht2zhs.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = zht2zhs.ini; path = OpenCC/data/config/zht2zhs.ini; sourceTree = "<group>"; };
+		07B9EB06183823060004C371 /* zht2zhs.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = zht2zhs.ini; path = zht2zhs.ini; sourceTree = "<group>"; };
 		07B9EB081838360C0004C371 /* trad_to_simp_characters.ocd */ = {isa = PBXFileReference; lastKnownFileType = file; path = trad_to_simp_characters.ocd; sourceTree = "<group>"; };
 		07B9EB091838360C0004C371 /* trad_to_simp_phrases.ocd */ = {isa = PBXFileReference; lastKnownFileType = file; path = trad_to_simp_phrases.ocd; sourceTree = "<group>"; };
 		07C9E83A13D8C5A9004E932B /* JJTypesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JJTypesetter.h; sourceTree = "<group>"; };
