@@ -248,6 +248,20 @@ Gw
                             <menuItem isSeparatorItem="YES" id="606">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
+                            <menuItem title="Unwrap Selected Lines" keyEquivalent="U" id="81c-0K-soR">
+                                <connections>
+                                    <action selector="unwrapSelectedLines:" target="-1" id="EJP-7Q-9D1"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Convert to Simplified Chinese" keyEquivalent="S" id="uI9-z3-Hkh">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                <connections>
+                                    <action selector="convertToSimplifiedChinese:" target="-1" id="jmI-PB-ioP"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="dnO-Sm-xI3">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
                             <menuItem title="Find" id="310">
                                 <menu key="submenu" title="Find" id="317">
                                     <items>
